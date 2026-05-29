@@ -1,0 +1,198 @@
+{
+  "nav": {
+    "home": "首页",
+    "products": "全部商品",
+    "cart": "购物车",
+    "wishlist": "收藏夹",
+    "orders": "我的订单",
+    "profile": "我的账户",
+    "login": "登录",
+    "logout": "退出登录",
+    "admin": "管理后台",
+    "searchPlaceholder": "搜索商品...",
+    "mobileSearch": "搜索商品...",
+    "switchToKhmer": "ភាសាខ្មែរ",
+    "switchToEnglish": "English",
+    "languages": {
+      "en": "English",
+      "km": "ភាសាខ្មែរ",
+      "ja": "日本語",
+      "zh": "中文"
+    },
+    "categories": {
+      "electronics": "电子产品",
+      "fashion": "时尚",
+      "food": "食品"
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "金边市内免费配送",
+      "title": "柬埔寨",
+      "highlight": "优质好物",
+      "subtitle": "支持 USD 和 KHR 支付。接受 ABA、ACLEDA、Wing 及货到付款。",
+      "cta": "立即购物 →"
+    },
+    "categories": { "title": "按类别浏览" },
+    "featured": { "title": "精选商品", "viewAll": "查看全部 →" },
+    "delivery": {
+      "title": "全柬埔寨配送",
+      "zones": "金边 • 暹粒 • 西哈努克维尔 • 全国各省",
+      "cta": "开始购物"
+    }
+  },
+  "products": {
+    "title": "全部商品",
+    "searchResults": "\"{query}\"的搜索结果",
+    "found": "找到 {count} 件商品",
+    "sort": {
+      "latest": "最新",
+      "priceAsc": "价格：从低到高",
+      "priceDesc": "价格：从高到低",
+      "nameAz": "名称 A-Z"
+    },
+    "filters": {
+      "categories": "类别",
+      "allCategories": "全部类别",
+      "priceRange": "价格范围（USD）",
+      "min": "最低",
+      "max": "最高",
+      "apply": "应用",
+      "inStock": "仅显示有货",
+      "clearAll": "清除全部筛选"
+    },
+    "empty": { "title": "未找到商品", "hint": "请尝试调整筛选条件" },
+    "inStock": "有货",
+    "outOfStock": "缺货",
+    "onlyLeft": "仅剩 {count} 件",
+    "addToCart": "加入购物车",
+    "addedToCart": "{name} 已加入购物车",
+    "quantity": "数量：",
+    "description": "商品描述",
+    "related": "相关商品",
+    "freeDelivery": "金边市内订单满 $20 免费配送",
+    "paymentMethods": "支持 ABA、ACLEDA、Wing Money 或货到付款"
+  },
+  "cart": {
+    "title": "购物车",
+    "itemCount": "{count} 件商品",
+    "empty": {
+      "title": "购物车是空的",
+      "hint": "浏览商品并添加您喜欢的商品！",
+      "cta": "立即购物"
+    },
+    "subtotal": "小计",
+    "delivery": "配送费",
+    "deliveryNote": "结账时计算",
+    "total": "合计",
+    "checkout": "前往结账",
+    "continueShopping": "继续购物"
+  },
+  "checkout": {
+    "title": "结账",
+    "address": {
+      "title": "收货地址",
+      "fullName": "姓名",
+      "phone": "电话（柬埔寨）",
+      "province": "省份",
+      "selectProvince": "选择省份",
+      "city": "城市 / 区县",
+      "address": "详细地址",
+      "addressPlaceholder": "街道、门牌号、村庄..."
+    },
+    "delivery": { "title": "配送区域", "days": "{days} 天" },
+    "payment": { "title": "支付方式" },
+    "coupon": {
+      "placeholder": "优惠券码",
+      "apply": "使用",
+      "applied": "优惠券已使用！-{discount}"
+    },
+    "notes": {
+      "title": "订单备注（可选）",
+      "placeholder": "配送特殊要求..."
+    },
+    "summary": {
+      "title": "订单摘要",
+      "subtotal": "小计",
+      "delivery": "配送费",
+      "discount": "优惠",
+      "total": "合计"
+    },
+    "submit": "提交订单",
+    "submitting": "正在提交...",
+    "success": "订单已提交！正在跳转至支付…",
+    "error": "订单提交失败",
+    "emptyCart": "购物车是空的。",
+    "continueShopping": "继续购物"
+  },
+  "auth": {
+    "login": {
+      "title": "欢迎回来",
+      "subtitle": "登录您的账户",
+      "email": "邮箱",
+      "password": "密码",
+      "submit": "登录",
+      "submitting": "登录中...",
+      "noAccount": "还没有账户？",
+      "register": "注册",
+      "error": "邮箱或密码不正确",
+      "success": "欢迎回来！"
+    },
+    "register": {
+      "title": "创建账户",
+      "name": "姓名",
+      "namePlaceholder": "您的姓名",
+      "email": "邮箱",
+      "phone": "电话（柬埔寨）",
+      "password": "密码",
+      "passwordPlaceholder": "至少8位字符",
+      "confirm": "确认密码",
+      "repeatPlaceholder": "再次输入密码",
+      "submit": "创建账户",
+      "submitting": "创建中...",
+      "hasAccount": "已有账户？",
+      "signin": "登录",
+      "passwordMismatch": "两次密码不一致",
+      "success": "账户已创建！请登录。",
+      "error": "注册失败"
+    }
+  },
+  "order": {
+    "title": "订单 #{number}",
+    "allOrders": "← 全部订单",
+    "status": {
+      "PENDING": "待处理",
+      "CONFIRMED": "已确认",
+      "PROCESSING": "处理中",
+      "SHIPPED": "已发货",
+      "DELIVERED": "已送达",
+      "CANCELLED": "已取消",
+      "REFUNDED": "已退款"
+    },
+    "tracking": "物流单号：{code}",
+    "items": "商品",
+    "quantity": "数量：{qty}",
+    "paymentSummary": "支付摘要",
+    "paymentMethod": "支付方式",
+    "deliveryAddress": "收货地址",
+    "zone": "区域：{name}"
+  },
+  "footer": {
+    "description": "柬埔寨值得信赖的网上商店。优质商品，全国配送。",
+    "shop": "购物",
+    "allProducts": "全部商品",
+    "featured": "精选",
+    "account": "账户",
+    "myOrders": "我的订单",
+    "contact": "联系我们",
+    "rights": "© {year} BOSBA. 版权所有。",
+    "accepts": "支持：ABA Bank、ACLEDA、Wing Money、货到付款"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "出现错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "save": "保存"
+  }
+}

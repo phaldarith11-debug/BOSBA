@@ -1,0 +1,198 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "All Products",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "orders": "My Orders",
+    "profile": "My Profile",
+    "login": "Login",
+    "logout": "Sign Out",
+    "admin": "Admin Panel",
+    "searchPlaceholder": "Search products... / ស្វែងរក...",
+    "mobileSearch": "Search products...",
+    "switchToKhmer": "ភាសាខ្មែរ",
+    "switchToEnglish": "English",
+    "languages": {
+      "en": "English",
+      "km": "ភាសាខ្មែរ",
+      "ja": "日本語",
+      "zh": "中文"
+    },
+    "categories": {
+      "electronics": "Electronics",
+      "fashion": "Fashion",
+      "food": "Food"
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "Free delivery in Phnom Penh",
+      "title": "Shop Cambodia's",
+      "highlight": "Best Products",
+      "subtitle": "Pay in USD or KHR. ABA, ACLEDA, Wing & COD accepted.",
+      "cta": "Shop Now →"
+    },
+    "categories": { "title": "Shop by Category" },
+    "featured": { "title": "Featured Products", "viewAll": "View all →" },
+    "delivery": {
+      "title": "We Deliver Across Cambodia",
+      "zones": "Phnom Penh • Siem Reap • Sihanoukville • All Provinces",
+      "cta": "Start Shopping"
+    }
+  },
+  "products": {
+    "title": "All Products",
+    "searchResults": "Results for \"{query}\"",
+    "found": "{count} products found",
+    "sort": {
+      "latest": "Latest",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "nameAz": "Name A-Z"
+    },
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "All Categories",
+      "priceRange": "Price Range (USD)",
+      "min": "Min",
+      "max": "Max",
+      "apply": "Apply",
+      "inStock": "In stock only",
+      "clearAll": "Clear all filters"
+    },
+    "empty": { "title": "No products found", "hint": "Try adjusting your filters" },
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "onlyLeft": "Only {count} left",
+    "addToCart": "Add to Cart",
+    "addedToCart": "{name} added to cart",
+    "quantity": "Quantity:",
+    "description": "Description",
+    "related": "Related Products",
+    "freeDelivery": "Free delivery in Phnom Penh on orders over $20",
+    "paymentMethods": "Pay with ABA, ACLEDA, Wing Money or Cash on Delivery"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "itemCount": "{count} items",
+    "empty": {
+      "title": "Your cart is empty",
+      "hint": "Browse our products and add something you like!",
+      "cta": "Shop Now"
+    },
+    "subtotal": "Subtotal",
+    "delivery": "Delivery",
+    "deliveryNote": "Calculated at checkout",
+    "total": "Total",
+    "checkout": "Proceed to Checkout",
+    "continueShopping": "Continue Shopping"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "address": {
+      "title": "Delivery Address",
+      "fullName": "Full Name",
+      "phone": "Phone (Cambodia)",
+      "province": "Province",
+      "selectProvince": "Select province",
+      "city": "City / District",
+      "address": "Address",
+      "addressPlaceholder": "Street, house number, village..."
+    },
+    "delivery": { "title": "Delivery Zone", "days": "{days} days" },
+    "payment": { "title": "Payment Method" },
+    "coupon": {
+      "placeholder": "Coupon code",
+      "apply": "Apply",
+      "applied": "Coupon applied! -{discount}"
+    },
+    "notes": {
+      "title": "Order Notes (optional)",
+      "placeholder": "Special instructions for delivery..."
+    },
+    "summary": {
+      "title": "Order Summary",
+      "subtotal": "Subtotal",
+      "delivery": "Delivery",
+      "discount": "Discount",
+      "total": "Total"
+    },
+    "submit": "Place Order",
+    "submitting": "Placing Order...",
+    "success": "Order placed! Proceeding to payment…",
+    "error": "Failed to place order",
+    "emptyCart": "Your cart is empty.",
+    "continueShopping": "Continue Shopping"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "register": "Register",
+      "error": "Invalid email or password",
+      "success": "Welcome back!"
+    },
+    "register": {
+      "title": "Create an account",
+      "name": "Full Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "phone": "Phone (Cambodia)",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 8 characters",
+      "confirm": "Confirm Password",
+      "repeatPlaceholder": "Repeat password",
+      "submit": "Create Account",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "signin": "Sign in",
+      "passwordMismatch": "Passwords do not match",
+      "success": "Account created! Please sign in.",
+      "error": "Registration failed"
+    }
+  },
+  "order": {
+    "title": "Order #{number}",
+    "allOrders": "← All Orders",
+    "status": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "PROCESSING": "Processing",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled",
+      "REFUNDED": "Refunded"
+    },
+    "tracking": "Tracking: {code}",
+    "items": "Items",
+    "quantity": "Qty: {qty}",
+    "paymentSummary": "Payment Summary",
+    "paymentMethod": "Payment",
+    "deliveryAddress": "Delivery Address",
+    "zone": "Zone: {name}"
+  },
+  "footer": {
+    "description": "Cambodia's trusted online store. Quality products delivered to your door across the Kingdom.",
+    "shop": "Shop",
+    "allProducts": "All Products",
+    "featured": "Featured",
+    "account": "Account",
+    "myOrders": "My Orders",
+    "contact": "Contact",
+    "rights": "© {year} BOSBA. All rights reserved.",
+    "accepts": "Accepts: ABA Bank, ACLEDA, Wing Money, COD"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save"
+  }
+}

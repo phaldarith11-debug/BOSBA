@@ -1,0 +1,198 @@
+{
+  "nav": {
+    "home": "ទំព័រដើម",
+    "products": "ផលិតផលទាំងអស់",
+    "cart": "កន្ត្រក",
+    "wishlist": "បញ្ជីចូលចិត្ត",
+    "orders": "ការបញ្ជាទិញរបស់ខ្ញុំ",
+    "profile": "គណនីរបស់ខ្ញុំ",
+    "login": "ចូលគណនី",
+    "logout": "ចាកចេញ",
+    "admin": "គ្រប់គ្រង",
+    "searchPlaceholder": "ស្វែងរកផលិតផល...",
+    "mobileSearch": "ស្វែងរក...",
+    "switchToKhmer": "ភាសាខ្មែរ",
+    "switchToEnglish": "English",
+    "languages": {
+      "en": "English",
+      "km": "ភាសាខ្មែរ",
+      "ja": "日本語",
+      "zh": "中文"
+    },
+    "categories": {
+      "electronics": "អេឡិចត្រូនិច",
+      "fashion": "ម៉ូដ",
+      "food": "អាហារ"
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "ដឹកដោយឥតគិតថ្លៃក្នុងភ្នំពេញ",
+      "title": "ទិញផលិតផល",
+      "highlight": "ល្អបំផុតនៅកម្ពុជា",
+      "subtitle": "ទូទាត់ជា USD ឬ KHR។ ទទួលយក ABA, ACLEDA, Wing និង COD",
+      "cta": "ទិញឥឡូវ →"
+    },
+    "categories": { "title": "ទិញតាមប្រភេទ" },
+    "featured": { "title": "ផលិតផលពិសេស", "viewAll": "មើលទាំងអស់ →" },
+    "delivery": {
+      "title": "យើងដឹកទូទាំងប្រទេសកម្ពុជា",
+      "zones": "ភ្នំពេញ • សៀមរាប • ព្រះសីហនុ • គ្រប់ខេត្ត",
+      "cta": "ចាប់ផ្ដើមទិញ"
+    }
+  },
+  "products": {
+    "title": "ផលិតផលទាំងអស់",
+    "searchResults": "លទ្ធផលសម្រាប់ \"{query}\"",
+    "found": "រកឃើញ {count} ផលិតផល",
+    "sort": {
+      "latest": "ថ្មីបំផុត",
+      "priceAsc": "តម្លៃ: ទាបទៅខ្ពស់",
+      "priceDesc": "តម្លៃ: ខ្ពស់ទៅទាប",
+      "nameAz": "ឈ្មោះ A-Z"
+    },
+    "filters": {
+      "categories": "ប្រភេទ",
+      "allCategories": "ប្រភេទទាំងអស់",
+      "priceRange": "ជួរតម្លៃ (USD)",
+      "min": "អប្បបរមា",
+      "max": "អតិបរមា",
+      "apply": "អនុវត្ត",
+      "inStock": "មានស្តុកប៉ុណ្ណោះ",
+      "clearAll": "លុបតម្រងទាំងអស់"
+    },
+    "empty": { "title": "រកមិនឃើញផលិតផល", "hint": "សាកល្បងប្ដូរការតម្រង" },
+    "inStock": "មានស្តុក",
+    "outOfStock": "អស់ស្តុក",
+    "onlyLeft": "នៅសល់ {count} ទៀតប៉ុណ្ណោះ",
+    "addToCart": "បន្ថែមទៅកន្ត្រក",
+    "addedToCart": "{name} បានបន្ថែមទៅកន្ត្រក",
+    "quantity": "បរិមាណ:",
+    "description": "ការពិពណ៌នា",
+    "related": "ផលិតផលពាក់ព័ន្ធ",
+    "freeDelivery": "ដឹកឥតគិតថ្លៃក្នុងភ្នំពេញ លើការទិញលើស $20",
+    "paymentMethods": "ទូទាត់ជាមួយ ABA, ACLEDA, Wing Money ឬ COD"
+  },
+  "cart": {
+    "title": "កន្ត្រករបស់ខ្ញុំ",
+    "itemCount": "{count} មុខទំនិញ",
+    "empty": {
+      "title": "កន្ត្រករបស់អ្នកទទេ",
+      "hint": "រកមើលផលិតផលហើយបន្ថែមអ្វីដែលអ្នកចូលចិត្ត!",
+      "cta": "ទិញឥឡូវ"
+    },
+    "subtotal": "តម្លៃសរុបរង",
+    "delivery": "ការដឹក",
+    "deliveryNote": "គណនានៅការទូទាត់",
+    "total": "សរុប",
+    "checkout": "បន្តទៅការទូទាត់",
+    "continueShopping": "បន្តទិញទំនិញ"
+  },
+  "checkout": {
+    "title": "ការទូទាត់",
+    "address": {
+      "title": "អាសយដ្ឋានដឹក",
+      "fullName": "ឈ្មោះពេញ",
+      "phone": "ទូរស័ព្ទ (កម្ពុជា)",
+      "province": "ខេត្ត/រាជធានី",
+      "selectProvince": "ជ្រើសខេត្ត",
+      "city": "ក្រុង / ស្រុក",
+      "address": "អាសយដ្ឋាន",
+      "addressPlaceholder": "ផ្លូវ, លេខផ្ទះ, ភូមិ..."
+    },
+    "delivery": { "title": "តំបន់ដឹក", "days": "{days} ថ្ងៃ" },
+    "payment": { "title": "វិធីទូទាត់" },
+    "coupon": {
+      "placeholder": "លេខកូដប័ណ្ណបញ្ចុះតម្លៃ",
+      "apply": "អនុវត្ត",
+      "applied": "ប្អូន coupon! -{discount}"
+    },
+    "notes": {
+      "title": "ចំណាំ (ស្រេចចិត្ត)",
+      "placeholder": "ការណែនាំពិសេសសម្រាប់ការដឹក..."
+    },
+    "summary": {
+      "title": "សង្ខេបការបញ្ជាទិញ",
+      "subtotal": "តម្លៃសរុបរង",
+      "delivery": "ការដឹក",
+      "discount": "ការបញ្ចុះតម្លៃ",
+      "total": "សរុប"
+    },
+    "submit": "ដាក់ការបញ្ជាទិញ",
+    "submitting": "កំពុងដាក់ការបញ្ជាទិញ...",
+    "success": "បានដាក់ការបញ្ជាទិញ! កំពុងទៅការទូទាត់…",
+    "error": "ដាក់ការបញ្ជាទិញបរាជ័យ",
+    "emptyCart": "កន្ត្រករបស់អ្នកទទេ",
+    "continueShopping": "បន្តទិញទំនិញ"
+  },
+  "auth": {
+    "login": {
+      "title": "សូមស្វាគមន៍មកវិញ",
+      "subtitle": "ចូលទៅក្នុងគណនីរបស់អ្នក",
+      "email": "អ៊ីមែល",
+      "password": "ពាក្យសម្ងាត់",
+      "submit": "ចូលគណនី",
+      "submitting": "កំពុងចូល...",
+      "noAccount": "មិនមានគណនីទេ?",
+      "register": "ចុះឈ្មោះ",
+      "error": "អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ",
+      "success": "សូមស្វាគមន៍មកវិញ!"
+    },
+    "register": {
+      "title": "បង្កើតគណនី",
+      "name": "ឈ្មោះពេញ",
+      "namePlaceholder": "ឈ្មោះរបស់អ្នក",
+      "email": "អ៊ីមែល",
+      "phone": "ទូរស័ព្ទ (កម្ពុជា)",
+      "password": "ពាក្យសម្ងាត់",
+      "passwordPlaceholder": "យ៉ាងហោចណាស់ ៨ តួអក្សរ",
+      "confirm": "បញ្ជាក់ពាក្យសម្ងាត់",
+      "repeatPlaceholder": "បញ្ចូលពាក្យសម្ងាត់ម្ដងទៀត",
+      "submit": "បង្កើតគណនី",
+      "submitting": "កំពុងបង្កើត...",
+      "hasAccount": "មានគណនីរួចហើយ?",
+      "signin": "ចូលគណនី",
+      "passwordMismatch": "ពាក្យសម្ងាត់មិនត្រូវគ្នា",
+      "success": "បានបង្កើតគណនី! សូមចូល",
+      "error": "ការចុះឈ្មោះបរាជ័យ"
+    }
+  },
+  "order": {
+    "title": "ការបញ្ជាទិញ #{number}",
+    "allOrders": "← ការបញ្ជាទិញទាំងអស់",
+    "status": {
+      "PENDING": "កំពុងរង់ចាំ",
+      "CONFIRMED": "បានបញ្ជាក់",
+      "PROCESSING": "កំពុងដំណើរការ",
+      "SHIPPED": "កំពុងដឹក",
+      "DELIVERED": "បានដឹកដល់",
+      "CANCELLED": "បានលុបចោល",
+      "REFUNDED": "បានសង"
+    },
+    "tracking": "ការតាមដាន: {code}",
+    "items": "មុខទំនិញ",
+    "quantity": "ចំនួន: {qty}",
+    "paymentSummary": "សង្ខេបការទូទាត់",
+    "paymentMethod": "ការទូទាត់",
+    "deliveryAddress": "អាសយដ្ឋានដឹក",
+    "zone": "តំបន់: {name}"
+  },
+  "footer": {
+    "description": "ហាងលក់ទំនិញអនឡាញដែលអ្នកទុកចិត្ត។ ដឹកទំនិញគ្រប់គ្រប់កន្លែងក្នុងប្រទេស",
+    "shop": "ទំនិញ",
+    "allProducts": "ផលិតផលទាំងអស់",
+    "featured": "ពិសេស",
+    "account": "គណនី",
+    "myOrders": "ការបញ្ជាទិញ",
+    "contact": "ទំនាក់ទំនង",
+    "rights": "© {year} BOSBA. រក្សាសិទ្ធគ្រប់យ៉ាង",
+    "accepts": "ទទួលយក: ABA, ACLEDA, Wing Money, COD"
+  },
+  "common": {
+    "loading": "កំពុងផ្ទុក...",
+    "error": "មានបញ្ហាកើតឡើង",
+    "retry": "ព្យាយាមម្ដងទៀត",
+    "cancel": "បោះបង់",
+    "save": "រក្សាទុក"
+  }
+}

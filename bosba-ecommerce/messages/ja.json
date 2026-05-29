@@ -1,0 +1,198 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "products": "すべての商品",
+    "cart": "カート",
+    "wishlist": "お気に入り",
+    "orders": "注文履歴",
+    "profile": "マイページ",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "admin": "管理パネル",
+    "searchPlaceholder": "商品を検索...",
+    "mobileSearch": "商品を検索...",
+    "switchToKhmer": "ភាសាខ្មែរ",
+    "switchToEnglish": "English",
+    "languages": {
+      "en": "English",
+      "km": "ភាសាខ្មែរ",
+      "ja": "日本語",
+      "zh": "中文"
+    },
+    "categories": {
+      "electronics": "電子機器",
+      "fashion": "ファッション",
+      "food": "食品"
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "プノンペン市内送料無料",
+      "title": "カンボジアの",
+      "highlight": "おすすめ商品",
+      "subtitle": "USD・KHR払い対応。ABA・ACLEDA・Wing・代引き利用可能。",
+      "cta": "今すぐ購入 →"
+    },
+    "categories": { "title": "カテゴリーから探す" },
+    "featured": { "title": "注目の商品", "viewAll": "すべて見る →" },
+    "delivery": {
+      "title": "カンボジア全土にお届け",
+      "zones": "プノンペン • シェムリアップ • シアヌークビル • 全州",
+      "cta": "ショッピングを始める"
+    }
+  },
+  "products": {
+    "title": "すべての商品",
+    "searchResults": "「{query}」の検索結果",
+    "found": "{count}件の商品が見つかりました",
+    "sort": {
+      "latest": "新着順",
+      "priceAsc": "価格: 安い順",
+      "priceDesc": "価格: 高い順",
+      "nameAz": "名前 A-Z"
+    },
+    "filters": {
+      "categories": "カテゴリー",
+      "allCategories": "すべてのカテゴリー",
+      "priceRange": "価格帯 (USD)",
+      "min": "最低価格",
+      "max": "最高価格",
+      "apply": "適用",
+      "inStock": "在庫ありのみ",
+      "clearAll": "フィルターをリセット"
+    },
+    "empty": { "title": "商品が見つかりません", "hint": "フィルターを変えてお試しください" },
+    "inStock": "在庫あり",
+    "outOfStock": "在庫なし",
+    "onlyLeft": "残り{count}点",
+    "addToCart": "カートに追加",
+    "addedToCart": "{name}をカートに追加しました",
+    "quantity": "数量:",
+    "description": "商品説明",
+    "related": "関連商品",
+    "freeDelivery": "プノンペン市内$20以上のご注文で送料無料",
+    "paymentMethods": "ABA・ACLEDA・Wing Money・代引きでお支払い可能"
+  },
+  "cart": {
+    "title": "ショッピングカート",
+    "itemCount": "{count}点",
+    "empty": {
+      "title": "カートは空です",
+      "hint": "商品を探してカートに追加してください！",
+      "cta": "今すぐ購入"
+    },
+    "subtotal": "小計",
+    "delivery": "配送料",
+    "deliveryNote": "注文確認時に計算",
+    "total": "合計",
+    "checkout": "レジに進む",
+    "continueShopping": "買い物を続ける"
+  },
+  "checkout": {
+    "title": "ご注文手続き",
+    "address": {
+      "title": "お届け先住所",
+      "fullName": "お名前",
+      "phone": "電話番号（カンボジア）",
+      "province": "州・省",
+      "selectProvince": "州・省を選択",
+      "city": "市・郡",
+      "address": "住所",
+      "addressPlaceholder": "番地・建物名・村..."
+    },
+    "delivery": { "title": "配送エリア", "days": "{days}日" },
+    "payment": { "title": "お支払い方法" },
+    "coupon": {
+      "placeholder": "クーポンコード",
+      "apply": "適用",
+      "applied": "クーポン適用！ -{discount}"
+    },
+    "notes": {
+      "title": "配送メモ（任意）",
+      "placeholder": "配送に関する特別なご要望..."
+    },
+    "summary": {
+      "title": "ご注文内容",
+      "subtotal": "小計",
+      "delivery": "配送料",
+      "discount": "割引",
+      "total": "合計"
+    },
+    "submit": "注文を確定する",
+    "submitting": "注文処理中...",
+    "success": "ご注文が完了しました！お支払いへ…",
+    "error": "注文に失敗しました",
+    "emptyCart": "カートが空です。",
+    "continueShopping": "買い物を続ける"
+  },
+  "auth": {
+    "login": {
+      "title": "おかえりなさい",
+      "subtitle": "アカウントにログイン",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "submit": "ログイン",
+      "submitting": "ログイン中...",
+      "noAccount": "アカウントをお持ちでない方",
+      "register": "新規登録",
+      "error": "メールアドレスまたはパスワードが間違っています",
+      "success": "おかえりなさい！"
+    },
+    "register": {
+      "title": "アカウントを作成",
+      "name": "お名前",
+      "namePlaceholder": "お名前を入力",
+      "email": "メールアドレス",
+      "phone": "電話番号（カンボジア）",
+      "password": "パスワード",
+      "passwordPlaceholder": "8文字以上",
+      "confirm": "パスワードの確認",
+      "repeatPlaceholder": "パスワードを再入力",
+      "submit": "アカウントを作成",
+      "submitting": "作成中...",
+      "hasAccount": "すでにアカウントをお持ちの方",
+      "signin": "ログイン",
+      "passwordMismatch": "パスワードが一致しません",
+      "success": "アカウントを作成しました！ログインしてください。",
+      "error": "登録に失敗しました"
+    }
+  },
+  "order": {
+    "title": "注文 #{number}",
+    "allOrders": "← すべての注文",
+    "status": {
+      "PENDING": "保留中",
+      "CONFIRMED": "確認済み",
+      "PROCESSING": "処理中",
+      "SHIPPED": "発送済み",
+      "DELIVERED": "配達完了",
+      "CANCELLED": "キャンセル",
+      "REFUNDED": "返金済み"
+    },
+    "tracking": "追跡番号: {code}",
+    "items": "注文商品",
+    "quantity": "数量: {qty}",
+    "paymentSummary": "お支払い内容",
+    "paymentMethod": "お支払い方法",
+    "deliveryAddress": "お届け先住所",
+    "zone": "エリア: {name}"
+  },
+  "footer": {
+    "description": "カンボジアで信頼されるオンラインショップ。全土に高品質な商品をお届けします。",
+    "shop": "ショップ",
+    "allProducts": "すべての商品",
+    "featured": "注目商品",
+    "account": "アカウント",
+    "myOrders": "注文履歴",
+    "contact": "お問い合わせ",
+    "rights": "© {year} BOSBA. All rights reserved.",
+    "accepts": "対応決済: ABA Bank・ACLEDA・Wing Money・代引き"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "save": "保存"
+  }
+}

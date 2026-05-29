@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens ──────────────────────────────────────────────────── */
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+
+  --brand-primary: #e51b1b;
+  --brand-dark:    #c31111;
+  --brand-light:   #fff1f1;
+
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+
+  --header-height: 4rem;
+  --radius-card:   1rem;
+  --radius-btn:    9999px;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Custom scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: #cbd5e1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover{ background: #94a3b8; }
+
+/* ─── Focus ring ─────────────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────── */
+::selection {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+/* ─── Glassmorphism header ───────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Gradient text ──────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #e51b1b 0%, #7f1d1d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Card with lift hover ───────────────────────────────────────────── */
+.card {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  transition:
+    transform 0.28s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.28s cubic-bezier(0.16,1,0.3,1);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ─── Skeleton / shimmer ─────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* ─── Interactive tap scale ──────────────────────────────────────────── */
+.interactive {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.interactive:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* ─── Locale-specific typography ────────────────────────────────────── */
+:lang(km) {
+  font-family: var(--font-khmer), system-ui, sans-serif;
+  line-height: 1.9;
+  word-spacing: 0.04em;
+  letter-spacing: 0.01em;
+}
+
+:lang(ja) {
+  font-family: var(--font-jp), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+}
+
+:lang(zh),
+:lang(zh-Hans) {
+  font-family: var(--font-zh), "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+}
+
+.text-khmer {
+  font-family: var(--font-khmer), system-ui, sans-serif;
+  line-height: 1.9;
+}
+
+.text-japanese {
+  font-family: var(--font-jp), system-ui, sans-serif;
+  line-height: 1.8;
+}
+
+.text-chinese {
+  font-family: var(--font-zh), system-ui, sans-serif;
+  line-height: 1.75;
+}
+
+/* ─── Utilities ──────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* press-down feedback */
+  .press:active {
+    transform: scale(0.97);
+  }
+}

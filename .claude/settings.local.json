@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Supabase__list_organizations",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__get_publishable_keys",
+      "mcp__claude_ai_Supabase__get_project_url",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "PowerShell(New-Item *)",
+      "PowerShell(Receive-Job *)",
+      "PowerShell(Wait-Job *)",
+      "PowerShell(D:\\\\BOSBA\\\\platform-tools\\\\adb.exe devices -l)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__get_project",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(Get-ChildItem \"D:\\\\BOSBA\\\\bosba-ecommerce\\\\src\" -Recurse | Where-Object {!$_.PSIsContainer} | Select-Object FullName | Format-Table -AutoSize -Wrap)",
+      "PowerShell(cd \"D:\\\\BOSBA\\\\bosba-ecommerce\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"layout|LanguageSwitcher|routing|request\\\\.ts\" })",
+      "PowerShell(cd \"D:\\\\BOSBA\\\\bosba-ecommerce\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"admin\" } | Select-Object -First 30)",
+      "PowerShell(cd \"D:\\\\BOSBA\\\\bosba-ecommerce\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"admin\" })"
+    ]
+  }
+}
