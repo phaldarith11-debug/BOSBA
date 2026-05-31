@@ -55,7 +55,7 @@ export type TranslationSchema = {
     close: string; confirm: string; delete: string; search: string;
   };
   checkout: {
-    title: string; fullName: string; phoneLabel: string; province: string;
+    title: string; fullName: string; phoneLabel: string; province: string; deliveryAddress: string;
     selectProvince: string; city: string; commune: string; address: string; addressPlaceholder: string;
     deliveryZone: string; paymentMethod: string; couponPlaceholder: string;
     applyCoupon: string; notes: string; notesPlaceholder: string;
@@ -125,7 +125,7 @@ const en: TranslationSchema = {
     delete: "Delete", search: "Search",
   },
   checkout: {
-    title: "Checkout", fullName: "Full Name", phoneLabel: "Phone (Cambodia)",
+    title: "Checkout", fullName: "Full Name", phoneLabel: "Phone (Cambodia)", deliveryAddress: "Delivery Address",
     province: "Province", selectProvince: "Select province",
     city: "City / District", commune: "Commune", address: "Address",
     addressPlaceholder: "Street, house number, village...",
@@ -204,7 +204,7 @@ const km: TranslationSchema = {
     delete: "លុប", search: "ស្វែងរក",
   },
   checkout: {
-    title: "ការទូទាត់", fullName: "ឈ្មោះពេញ", phoneLabel: "ទូរស័ព្ទ",
+    title: "ការទូទាត់", fullName: "ឈ្មោះពេញ", phoneLabel: "ទូរស័ព្ទ", deliveryAddress: "អាសយដ្ឋានដឹក",
     province: "ខេត្ត/រាជធានី", selectProvince: "ជ្រើសខេត្ត",
     city: "ក្រុង / ស្រុក", commune: "ឃុំ / សង្កាត់", address: "អាសយដ្ឋាន",
     addressPlaceholder: "ផ្លូវ, លេខផ្ទះ, ភូមិ...",
@@ -280,7 +280,7 @@ const ja: TranslationSchema = {
     close: "閉じる", confirm: "確認", delete: "削除", search: "検索",
   },
   checkout: {
-    title: "ご注文手続き", fullName: "お名前", phoneLabel: "電話番号",
+    title: "ご注文手続き", fullName: "お名前", phoneLabel: "電話番号", deliveryAddress: "配送先",
     province: "州・省", selectProvince: "州・省を選択",
     city: "市・郡", commune: "コミューン・村", address: "住所",
     addressPlaceholder: "番地・建物名・村...",
@@ -356,7 +356,7 @@ const zh: TranslationSchema = {
     close: "关闭", confirm: "确认", delete: "删除", search: "搜索",
   },
   checkout: {
-    title: "结账", fullName: "姓名", phoneLabel: "电话",
+    title: "结账", fullName: "姓名", phoneLabel: "电话", deliveryAddress: "配送地址",
     province: "省份", selectProvince: "选择省份",
     city: "城市 / 区县", commune: "公社 / 街道", address: "详细地址",
     addressPlaceholder: "街道、门牌号...",

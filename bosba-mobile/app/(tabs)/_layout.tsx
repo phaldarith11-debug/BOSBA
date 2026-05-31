@@ -1,11 +1,11 @@
 import { Tabs } from "expo-router";
 import { ShoppingCart, Home, Grid, User } from "lucide-react-native";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, type ColorValue } from "react-native";
 import { useCartStore } from "../../src/store/cart";
 import { useI18n } from "../../src/context/i18n";
 import { LanguageSwitcher } from "../../src/components/common/LanguageSwitcher";
 
-function CartIcon({ color, size }: { color: string; size: number }) {
+function CartIcon({ color, size }: { color: ColorValue; size: number }) {
   const totalItems = useCartStore((s) => s.totalItems());
   return (
     <View>

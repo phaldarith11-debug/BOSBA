@@ -44,7 +44,7 @@ export default function LoginScreen() {
   // Navigate once a session becomes active — covers every provider uniformly
   // (sync email/Google/Apple and async Facebook), and never fires on cancel.
   useEffect(() => {
-    if (user) router.replace("/(tabs)/");
+    if (user) router.replace("/(tabs)");
   }, [user]);
 
   async function handleOAuth(provider: string, fn: () => Promise<{ error?: string }>) {
