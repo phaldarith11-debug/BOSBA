@@ -1,45 +1,48 @@
-# backend/ — Shared Backend Logic / Services (scaffold)
+# backend/ — `@bosba/backend` (shared services)
 
-> ⚠️ **Status: empty scaffold.** The real backend is currently **live inside the Next.js app**
-> at `bosba-ecommerce/src/app/api/` (route handlers) and `bosba-ecommerce/src/lib/` (services).
-> Nothing has been moved here, so nothing is broken. This folder documents what *could* move
-> later — it is NOT a working server yet.
+> ✅ **Status: real workspace package** for framework-agnostic services.
+> Verified with `tsc` and `next build`.
 
-## What this folder is for
-A future home for shared backend logic if you ever extract a standalone API service. For now it
-is documentation + placeholders only.
+## What this is
+Reusable backend service logic with **no framework dependencies** (only `cloudinary` + Node
+built-ins). It's an npm workspace package; `bosba-ecommerce` imports it.
 
-## Where the backend REALLY lives today
-| Scaffold folder | Real location today | Notes |
-|-----------------|---------------------|-------|
-| `api/` | `bosba-ecommerce/src/app/api/` | Next.js route handlers: `admin`, `auth`, `mobile`, `orders`, `payment`, `products`, `coupons`, `delivery-zones`, `app-settings`, `telegram`, `upload`, `user` |
-| `auth/` | `bosba-ecommerce/src/lib/auth.ts`, `mobile-auth.ts`, `google-mobile-oauth.ts` | NextAuth + mobile token auth |
-| `services/` | `bosba-ecommerce/src/lib/` | business helpers |
-| `payments/` | `bosba-ecommerce/src/lib/payway.ts` + `src/app/api/payment/` | ABA PayWay |
-| `notifications/` | `bosba-ecommerce/src/lib/telegram.ts`, `email.ts` | Telegram + email |
-| `uploads/` | `bosba-ecommerce/src/lib/cloudinary.ts` + `src/app/api/upload/` | Cloudinary |
-| `validators/` | (inline in routes today) | move validation schemas here later |
-| `utils/` | `bosba-ecommerce/src/utils/`, `src/lib/currency.ts` | helpers |
-| `middleware/` | `bosba-ecommerce/src/middleware.ts` | Next.js middleware |
+## What moved here
+| Subpath | File | Purpose |
+|---------|------|---------|
+| `@bosba/backend/payments/payway` | `payments/payway.ts` | ABA PayWay transactions + callback verify |
+| `@bosba/backend/notifications/telegram` | `notifications/telegram.ts` | Telegram order messages |
+| `@bosba/backend/notifications/email` | `notifications/email.ts` | Email (Resend) |
+| `@bosba/backend/uploads/cloudinary` | `uploads/cloudinary.ts` | Cloudinary upload/delete |
+| `@bosba/backend/utils/currency` | `utils/currency.ts` | USD/KHR formatting + conversion |
 
-## ⚠️ Do NOT move the API yet
-Next.js **route handlers cannot run from a plain sibling folder** — they only work inside the
-Next.js app. Moving `src/app/api/*` here would break the website and the mobile app (which calls
-`/api/mobile/*`). A real standalone backend = rebuilding it as its own service (e.g. Express/Hono),
-a deliberate project. Until then, the API stays in `bosba-ecommerce` and this folder is a plan.
+Inside `bosba-ecommerce`, the old `src/lib/<x>.ts` files are now thin re-export shims, so
+existing `@/lib/<x>` imports are unchanged.
 
-## Scaffold layout
+## What deliberately STAYED in bosba-ecommerce (and why)
+| Stayed | Reason |
+|--------|--------|
+| `src/lib/auth.ts` | NextAuth web config — tightly coupled to next-auth + the app |
+| `src/lib/mobile-auth.ts`, `src/lib/google-mobile-oauth.ts` | Need `next-auth/jwt` (+ prisma). Pulling next-auth into this package **duplicates React** and breaks the build, so they stay with the app's auth. |
+| `src/app/api/**` (all route handlers) | Next.js can only serve routes from its own `app/` dir |
+| `src/middleware.ts` | Next.js middleware |
+
+> **Hard rule learned:** `@bosba/backend` must never depend on `next`, `next-auth`, `react`, or
+> `react-dom`. Doing so installs a second framework copy under `backend/node_modules` and causes
+> `TypeError: Cannot read properties of null (reading 'useContext')` at build. Keep this package
+> framework-free; anything needing next-auth belongs in `bosba-ecommerce`.
+
+## Empty subfolders (reserved, not yet used)
+`api/`, `auth/`, `middleware/`, `validators/` — kept as placeholders for future framework-free
+helpers. The real API routes and auth stay in the app as noted above.
+
+## How apps use it
+```ts
+import { createABATransaction } from "@bosba/backend/payments/payway";
+import { formatPrice } from "@bosba/backend/utils/currency";
 ```
-backend/
-├── README.md
-├── api/  auth/  services/  middleware/
-├── payments/  notifications/  uploads/
-├── validators/  utils/
-```
 
-## How to run (today)
-The backend runs as part of the website: `cd bosba-ecommerce && npm run dev` (API at `/api/*`).
-
-## Related environment variables
-See `docs/ENVIRONMENT.md` (database URL, NextAuth secret, PayWay, Telegram, Cloudinary, email).
+## Config wiring (for reference)
+- root `package.json` workspaces include `backend`
+- `bosba-ecommerce/next.config.mjs` → `transpilePackages: ["@bosba/database", "@bosba/backend"]`
 </content>
