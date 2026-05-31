@@ -55,6 +55,24 @@ export function publicOrigin(req: Request): string {
   return `${proto}://${host}`;
 }
 
+/**
+ * Google only allows OAuth redirect URIs that are HTTPS, or HTTP on the loopback
+ * host (localhost / 127.0.0.1). It rejects private LAN IPs (192.168.x, 10.x,
+ * 172.16–31.x) with "device_id and device_name are required for private IP".
+ * We detect that BEFORE bouncing the browser to Google so we can show a clear,
+ * actionable error instead of Google's cryptic one.
+ */
+export function isGoogleSafeRedirect(redirectUri: string): boolean {
+  try {
+    const u = new URL(redirectUri);
+    if (u.protocol === "https:") return true;
+    if (u.protocol === "http:" && (u.hostname === "localhost" || u.hostname === "127.0.0.1")) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export type GoogleUserInfo = { sub: string; email?: string; name?: string; picture?: string };
 
 /**
