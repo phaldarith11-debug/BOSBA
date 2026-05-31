@@ -1,20 +1,30 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Eye } from "lucide-react";
+import { Pencil, Trash2, Eye, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 export function AdminProductActions({ productId, slug }: { productId: string; slug: string }) {
   const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
+    if (deleting) return;
     if (!window.confirm("Archive this product? It will be hidden from the store.")) return;
-    const res = await fetch(`/api/admin/products/${productId}`, { method: "DELETE" });
-    if (res.ok) {
-      toast.success("Product archived");
-      router.refresh();
-    } else {
-      toast.error("Failed to archive product");
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/products/${productId}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Product archived");
+        router.refresh();
+      } else {
+        toast.error("Failed to archive product");
+      }
+    } catch {
+      toast.error("Network error — could not archive product");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -38,10 +48,11 @@ export function AdminProductActions({ productId, slug }: { productId: string; sl
       </Link>
       <button
         onClick={handleDelete}
+        disabled={deleting}
         title="Archive"
-        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-wait"
       >
-        <Trash2 className="h-4 w-4" />
+        {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
       </button>
     </div>
   );

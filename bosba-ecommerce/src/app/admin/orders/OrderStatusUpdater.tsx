@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -6,18 +7,27 @@ const STATUSES = ["PENDING","CONFIRMED","PROCESSING","SHIPPED","DELIVERED","CANC
 
 export function OrderStatusUpdater({ orderId, currentStatus }: { orderId: string; currentStatus: string }) {
   const router = useRouter();
+  const [updating, setUpdating] = useState(false);
 
   async function handleChange(newStatus: string) {
-    const res = await fetch(`/api/orders/${orderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    });
-    if (res.ok) {
-      toast.success("Status updated");
-      router.refresh();
-    } else {
-      toast.error("Failed to update");
+    if (newStatus === currentStatus || updating) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        toast.success("Status updated");
+        router.refresh();
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch {
+      toast.error("Network error — could not update status");
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -33,8 +43,11 @@ export function OrderStatusUpdater({ orderId, currentStatus }: { orderId: string
   return (
     <select
       value={currentStatus}
+      disabled={updating}
       onChange={(e) => handleChange(e.target.value)}
-      className={`text-xs font-medium px-2 py-1 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 ${colors[currentStatus] ?? "bg-gray-100"}`}
+      className={`text-xs font-medium px-2 py-1 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+        updating ? "opacity-60 cursor-wait" : "cursor-pointer"
+      } ${colors[currentStatus] ?? "bg-gray-100"}`}
     >
       {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
     </select>
