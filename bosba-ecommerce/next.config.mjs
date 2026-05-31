@@ -16,6 +16,7 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  transpilePackages: ["@bosba/database"],
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client"],
   },

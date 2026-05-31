@@ -1,3 +1,16 @@
+# Dependencies (root + workspaces)
+node_modules/
+
+# Build / generated artifacts
+.next/
+dist/
+*.tsbuildinfo
+
+# Env files (never commit secrets)
+.env
+.env.local
+.env.*.local
+
 # Large build artifacts — do not commit (use GitHub Releases / EAS instead)
 *.apk
 *.aab
