@@ -19,17 +19,21 @@ export default function ProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
 
   const load = useCallback(async (q?: string) => {
+    setError(null);
     try {
       const params: Record<string, string> = {};
       if (q) params.search = q;
       const data = await getProducts(params);
       const raw: Product[] = data.products ?? data ?? [];
       setProducts(raw.map(normalizeProduct));
-    } catch {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load products";
+      setError(msg);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -148,6 +152,18 @@ export default function ProductsScreen() {
 
       {loading ? (
         <ActivityIndicator color={BRAND} style={{ marginTop: 48 }} />
+      ) : error ? (
+        <View style={styles.errorBox}>
+          <Text style={{ fontSize: 36, marginBottom: 10 }}>⚠️</Text>
+          <Text style={styles.emptyTitle}>Cannot reach server</Text>
+          <Text style={[styles.emptySubtitle, { textAlign: "center", paddingHorizontal: 24, lineHeight: 18, marginBottom: 16 }]}>{error}</Text>
+          <TouchableOpacity
+            style={{ backgroundColor: BRAND, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 9999 }}
+            onPress={() => { setLoading(true); load(search || undefined); }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "700", fontSize: 13 }}>Retry</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
           data={products}
@@ -224,6 +240,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7, borderRadius: 9999, alignItems: "center",
   },
   addBtnText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  errorBox: { alignItems: "center", paddingTop: 80 },
   empty: { alignItems: "center", paddingTop: 80 },
   emptyTitle: { fontSize: 16, fontWeight: "700", color: "#374151", marginBottom: 4 },
   emptySubtitle: { fontSize: 13, color: "#94a3b8" },

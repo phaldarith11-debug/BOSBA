@@ -20,6 +20,15 @@ type Order = {
   notes?: string | null;
   createdAt: string;
   items: OrderItem[];
+  address?: {
+    fullName: string;
+    phone: string;
+    addressLine1: string;
+    city: string;
+    province: string;
+    district?: string | null;
+    commune?: string | null;
+  } | null;
 };
 
 const STATUS_STEPS = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
@@ -132,6 +141,20 @@ export default function OrderDetailScreen() {
           <PriceRow label="Date" value={new Date(order.createdAt).toLocaleDateString()} />
         </View>
 
+        {/* Delivery Address */}
+        {order.address && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Delivery Address</Text>
+            <Text style={styles.addressName}>{order.address.fullName}</Text>
+            <Text style={styles.addressPhone}>{order.address.phone}</Text>
+            <Text style={styles.addressText}>{order.address.addressLine1}</Text>
+            <Text style={styles.addressText}>
+              {[order.address.commune, order.address.district, order.address.city].filter(Boolean).join(", ")}
+            </Text>
+            <Text style={styles.addressText}>{order.address.province}</Text>
+          </View>
+        )}
+
         {order.notes && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Notes</Text>
@@ -204,4 +227,7 @@ const styles = StyleSheet.create({
   priceValue:        { fontSize: 14, color: "#374151" },
   priceBold:         { fontWeight: "700", color: "#111827", fontSize: 15 },
   notes:             { fontSize: 14, color: "#374151", lineHeight: 20 },
+  addressName:       { fontSize: 15, fontWeight: "600", color: "#111827", marginBottom: 2 },
+  addressPhone:      { fontSize: 14, color: "#4b5563", marginBottom: 4 },
+  addressText:       { fontSize: 14, color: "#374151", marginBottom: 1 },
 });

@@ -1,6 +1,8 @@
 import crypto from "crypto";
 
-const PAYWAY_BASE = "https://checkout.payway.com.kh/api/payment-gateway/v1/payments";
+const PAYWAY_BASE =
+  process.env.ABA_PAYWAY_URL ??
+  "https://checkout.payway.com.kh/api/payment-gateway/v1/payments";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     where,
     include: {
       user: { select: { name: true, email: true } },
-      address: { select: { fullName: true, phone: true, city: true, province: true } },
+      address: { select: { fullName: true, phone: true, city: true, province: true, district: true, commune: true, addressLine1: true } },
       deliveryZone: { select: { nameEn: true } },
       items: { select: { nameEn: true, quantity: true, totalUsd: true } },
     },
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   });
 
   const HEADERS = [
-    "Order#", "Date", "Customer Name", "Email", "Phone", "City", "Province",
+    "Order#", "Date", "Customer Name", "Email", "Phone", "Province", "City", "District", "Commune", "Address",
     "Items", "Subtotal USD", "Delivery USD", "Discount USD", "Total USD", "Total KHR",
     "Payment Method", "Payment Status", "Order Status", "Tracking Code", "Delivery Zone",
   ];
@@ -57,8 +57,11 @@ export async function GET(req: NextRequest) {
       o.user.name ?? "",
       o.user.email,
       o.address?.phone ?? "",
-      o.address?.city ?? "",
       o.address?.province ?? "",
+      o.address?.city ?? "",
+      o.address?.district ?? "",
+      o.address?.commune ?? "",
+      o.address?.addressLine1 ?? "",
       items,
       Number(o.subtotalUsd).toFixed(2),
       Number(o.deliveryFeeUsd).toFixed(2),

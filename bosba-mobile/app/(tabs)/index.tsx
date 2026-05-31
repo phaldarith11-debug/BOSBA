@@ -86,13 +86,17 @@ export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
+    setError(null);
     try {
-      const data = await getProducts({ featured: "true", take: "8" });
+      const data = await getProducts({ featured: "true", limit: "8" });
       const raw: Product[] = data.products ?? data ?? [];
       setProducts(raw.map(normalizeProduct));
-    } catch {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load products";
+      setError(msg);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -145,6 +149,21 @@ export default function HomeScreen() {
 
         {loading ? (
           <ActivityIndicator color={BRAND} style={{ marginTop: 32 }} />
+        ) : error ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorIcon}>⚠️</Text>
+            <Text style={styles.errorTitle}>Cannot reach server</Text>
+            <Text style={styles.errorMsg}>{error}</Text>
+            <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); load(); }}>
+              <Text style={styles.retryBtnText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : products.length === 0 ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorIcon}>📦</Text>
+            <Text style={styles.errorTitle}>No featured products yet</Text>
+            <Text style={styles.errorMsg}>Check back soon for new arrivals.</Text>
+          </View>
         ) : (
           <View style={styles.grid}>
             {products.map((p) => (
@@ -251,6 +270,15 @@ const styles = StyleSheet.create({
     paddingVertical: 7, borderRadius: 9999, justifyContent: "center",
   },
   addBtnText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+
+  errorBox: {
+    alignItems: "center", paddingVertical: 32, paddingHorizontal: 16,
+  },
+  errorIcon: { fontSize: 36, marginBottom: 10 },
+  errorTitle: { fontSize: 15, fontWeight: "700", color: "#374151", marginBottom: 6 },
+  errorMsg: { fontSize: 12, color: "#64748b", textAlign: "center", lineHeight: 18, marginBottom: 16 },
+  retryBtn: { backgroundColor: BRAND, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 9999 },
+  retryBtnText: { color: "#fff", fontWeight: "700", fontSize: 13 },
 
   promo: {
     margin: 16, backgroundColor: "#0f172a", borderRadius: 20, padding: 24,

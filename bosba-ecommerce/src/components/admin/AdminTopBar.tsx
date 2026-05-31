@@ -20,7 +20,7 @@ export function AdminTopBar({ pendingOrders = 0 }: Props) {
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       {/* Left: spacer on desktop, empty space on mobile (hamburger is fixed positioned) */}
       <div className="hidden md:block">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-400" suppressHydrationWarning>
           {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
       </div>

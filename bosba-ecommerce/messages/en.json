@@ -97,7 +97,8 @@
       "province": "Province",
       "selectProvince": "Select province",
       "city": "City / District",
-      "address": "Address",
+      "commune": "Commune",
+      "address": "Detailed Address",
       "addressPlaceholder": "Street, house number, village..."
     },
     "delivery": { "title": "Delivery Zone", "days": "{days} days" },

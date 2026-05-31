@@ -56,7 +56,7 @@ export type TranslationSchema = {
   };
   checkout: {
     title: string; fullName: string; phoneLabel: string; province: string;
-    selectProvince: string; city: string; address: string; addressPlaceholder: string;
+    selectProvince: string; city: string; commune: string; address: string; addressPlaceholder: string;
     deliveryZone: string; paymentMethod: string; couponPlaceholder: string;
     applyCoupon: string; notes: string; notesPlaceholder: string;
     orderSummary: string; subtotal: string; delivery: string; discount: string;
@@ -127,7 +127,7 @@ const en: TranslationSchema = {
   checkout: {
     title: "Checkout", fullName: "Full Name", phoneLabel: "Phone (Cambodia)",
     province: "Province", selectProvince: "Select province",
-    city: "City / District", address: "Address",
+    city: "City / District", commune: "Commune", address: "Address",
     addressPlaceholder: "Street, house number, village...",
     deliveryZone: "Delivery Zone", paymentMethod: "Payment Method",
     couponPlaceholder: "Coupon code", applyCoupon: "Apply",
@@ -206,7 +206,7 @@ const km: TranslationSchema = {
   checkout: {
     title: "ការទូទាត់", fullName: "ឈ្មោះពេញ", phoneLabel: "ទូរស័ព្ទ",
     province: "ខេត្ត/រាជធានី", selectProvince: "ជ្រើសខេត្ត",
-    city: "ក្រុង / ស្រុក", address: "អាសយដ្ឋាន",
+    city: "ក្រុង / ស្រុក", commune: "ឃុំ / សង្កាត់", address: "អាសយដ្ឋាន",
     addressPlaceholder: "ផ្លូវ, លេខផ្ទះ, ភូមិ...",
     deliveryZone: "តំបន់ដឹក", paymentMethod: "វិធីទូទាត់",
     couponPlaceholder: "លេខកូដប័ណ្ណ", applyCoupon: "អនុវត្ត",
@@ -282,7 +282,7 @@ const ja: TranslationSchema = {
   checkout: {
     title: "ご注文手続き", fullName: "お名前", phoneLabel: "電話番号",
     province: "州・省", selectProvince: "州・省を選択",
-    city: "市・郡", address: "住所",
+    city: "市・郡", commune: "コミューン・村", address: "住所",
     addressPlaceholder: "番地・建物名・村...",
     deliveryZone: "配送エリア", paymentMethod: "お支払い方法",
     couponPlaceholder: "クーポンコード", applyCoupon: "適用",
@@ -358,7 +358,7 @@ const zh: TranslationSchema = {
   checkout: {
     title: "结账", fullName: "姓名", phoneLabel: "电话",
     province: "省份", selectProvince: "选择省份",
-    city: "城市 / 区县", address: "详细地址",
+    city: "城市 / 区县", commune: "公社 / 街道", address: "详细地址",
     addressPlaceholder: "街道、门牌号...",
     deliveryZone: "配送区域", paymentMethod: "支付方式",
     couponPlaceholder: "优惠券码", applyCoupon: "使用",

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/ProductForm";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 export default async function EditProductPage({ params }: { params: { id: string } }) {
   const [product, categories] = await Promise.all([
@@ -31,12 +30,15 @@ export default async function EditProductPage({ params }: { params: { id: string
 
   return (
     <div>
-      <nav className="flex items-center gap-1 text-sm text-gray-500 mb-5">
-        <Link href="/admin/products" className="hover:text-red-600">Products</Link>
-        <ChevronRight className="h-3 w-3" />
-        <span className="text-gray-900 font-medium truncate max-w-xs">{product.nameEn}</span>
-      </nav>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Product</h1>
+      <AdminPageHeader
+        title="Edit Product"
+        description={product.nameEn}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Products", href: "/admin/products" },
+          { label: product.nameEn },
+        ]}
+      />
       <ProductForm
         categories={categories.map((c) => ({ id: c.id, nameEn: c.nameEn }))}
         initialValues={initialValues}

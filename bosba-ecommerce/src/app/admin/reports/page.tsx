@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { formatUsd, formatKhr } from "@/lib/currency";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 async function getReportData() {
   const now = new Date();
@@ -43,7 +44,14 @@ export default async function ReportsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Sales Reports</h1>
+      <AdminPageHeader
+        title="Sales Reports"
+        description="Revenue and order analytics for your store"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Sales Reports" },
+        ]}
+      />
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-2xl p-5 shadow-sm">

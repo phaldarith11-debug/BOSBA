@@ -141,7 +141,10 @@ export default async function OrderDetailPage({
               <p>{order.address.phone}</p>
               <p>{order.address.addressLine1}</p>
               {order.address.addressLine2 && <p>{order.address.addressLine2}</p>}
-              <p>{order.address.city}, {order.address.province}</p>
+              <p>
+                {[order.address.commune, order.address.district, order.address.city].filter(Boolean).join(", ")}
+              </p>
+              <p>{order.address.province}</p>
               {order.deliveryZone && (
                 <p className="text-xs text-gray-400 mt-2">{t("zone", { name: order.deliveryZone.nameEn })}</p>
               )}

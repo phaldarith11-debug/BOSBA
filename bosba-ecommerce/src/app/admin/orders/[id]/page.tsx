@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { formatUsd } from "@/lib/currency";
 import { OrderStatusUpdater } from "../OrderStatusUpdater";
 import { ManualPayConfirm } from "../ManualPayConfirm";
 import { TrackingInput } from "./TrackingInput";
+import { PrintInvoice } from "./PrintInvoice";
 
 function Badge({ label, color }: { label: string; color: string }) {
   return (
@@ -37,10 +37,13 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
 
   return (
     <div>
-      <nav className="flex items-center gap-1 text-sm text-gray-500 mb-5">
-        <Link href="/admin/orders" className="hover:text-red-600">Orders</Link>
-        <ChevronRight className="h-3 w-3" />
-        <span className="text-gray-900 font-medium">#{order.orderNumber}</span>
+      {/* Breadcrumb + header */}
+      <nav className="flex items-center gap-1 text-sm text-gray-400 mb-4">
+        <Link href="/admin" className="hover:text-red-600 transition-colors">Dashboard</Link>
+        <span className="text-gray-300">/</span>
+        <Link href="/admin/orders" className="hover:text-red-600 transition-colors">Orders</Link>
+        <span className="text-gray-300">/</span>
+        <span className="text-gray-700 font-medium">#{order.orderNumber}</span>
       </nav>
 
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
@@ -50,7 +53,8 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
             {new Date(order.createdAt).toLocaleString("en-US", { dateStyle: "full", timeStyle: "short" })}
           </p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <PrintInvoice />
           <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
           {order.paymentStatus === "PENDING" && order.paymentMethod !== "COD" && (
             <ManualPayConfirm orderId={order.id} />
@@ -159,7 +163,10 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                 <p>{order.address.phone}</p>
                 <p>{order.address.addressLine1}</p>
                 {order.address.addressLine2 && <p>{order.address.addressLine2}</p>}
-                <p>{order.address.city}, {order.address.province}</p>
+                <p>
+                  {[order.address.commune, order.address.district, order.address.city].filter(Boolean).join(", ")}
+                </p>
+                <p>{order.address.province}</p>
                 {order.deliveryZone && (
                   <p className="text-xs text-gray-400 pt-1">
                     Zone: {order.deliveryZone.nameEn}

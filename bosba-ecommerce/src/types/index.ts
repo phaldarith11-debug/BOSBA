@@ -40,6 +40,8 @@ export interface CheckoutFormData {
   addressLine2?: string;
   city: string;
   province: string;
+  district?: string;
+  commune?: string;
   deliveryZoneId: string;
   paymentMethod: PaymentMethod;
   couponCode?: string;

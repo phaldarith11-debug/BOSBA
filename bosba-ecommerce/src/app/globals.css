@@ -156,3 +156,14 @@ body {
     transform: scale(0.97);
   }
 }
+
+/* ─── Admin print styles ─────────────────────────────────────────── */
+@media print {
+  body { background: white !important; }
+  .print\:hidden { display: none !important; }
+  aside, header, nav { display: none !important; }
+  main { padding: 0 !important; margin: 0 !important; }
+  .bg-gray-900, .bg-gray-50, .bg-white { background: white !important; }
+  .shadow-sm, .shadow { box-shadow: none !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+}

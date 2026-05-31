@@ -21,9 +21,15 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [prevCount, setPrevCount] = useState(totalItems);
   const [cartBump, setCartBump] = useState(false);
+  // Prevent hydration mismatch: localStorage-persisted Zustand stores
+  // (cart, wishlist) are unavailable on the server, so badge counts are
+  // always 0 during SSR.  We defer badge rendering until after mount.
+  const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -123,7 +129,7 @@ export function Header() {
               aria-label={t("wishlist")}
             >
               <Heart className="h-5 w-5 text-gray-600 group-hover:text-red-500 transition-colors" />
-              {wishlistCount > 0 && (
+              {mounted && wishlistCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-pink-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center font-bold px-1 leading-none">
                   {wishlistCount > 9 ? "9+" : wishlistCount}
                 </span>
@@ -141,7 +147,7 @@ export function Header() {
                   cartBump ? "animate-wiggle" : ""
                 }`}
               />
-              {totalItems > 0 && (
+              {mounted && totalItems > 0 && (
                 <span
                   className={`absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold px-1 leading-none ${
                     cartBump ? "animate-cart-bump" : ""

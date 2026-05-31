@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   ScrollView, Alert, KeyboardAvoidingView, Platform,
@@ -31,7 +31,7 @@ function Dots() {
 }
 
 export default function LoginScreen() {
-  const { signIn, signInWithGoogle, signInWithFacebook, signInWithApple } = useAuth();
+  const { user, signIn, signInWithGoogle, signInWithFacebook, signInWithApple } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -41,12 +41,17 @@ export default function LoginScreen() {
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(false);
 
+  // Navigate once a session becomes active — covers every provider uniformly
+  // (sync email/Google/Apple and async Facebook), and never fires on cancel.
+  useEffect(() => {
+    if (user) router.replace("/(tabs)/");
+  }, [user]);
+
   async function handleOAuth(provider: string, fn: () => Promise<{ error?: string }>) {
     setOauthLoading(provider);
     const { error } = await fn();
     setOauthLoading(null);
     if (error) Alert.alert("Sign In Failed", error);
-    else if (provider !== "google" && provider !== "facebook") router.replace("/(tabs)/");
   }
 
   async function handleLogin() {
@@ -55,7 +60,6 @@ export default function LoginScreen() {
     const { error } = await signIn(email.trim().toLowerCase(), password);
     setLoading(false);
     if (error) Alert.alert("Sign In Failed", error);
-    else router.replace("/(tabs)/");
   }
 
   type OAuthButton = {

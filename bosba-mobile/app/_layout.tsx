@@ -8,6 +8,7 @@ import {
 } from "@expo-google-fonts/battambang";
 import { AuthProvider, useAuth } from "../src/context/auth";
 import { I18nProvider, useI18n } from "../src/context/i18n";
+import { AppSettingsProvider } from "../src/context/app-settings";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 
@@ -55,12 +56,14 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <I18nProvider>
-      <AuthProvider>
-        <SafeAreaProvider>
-          <StatusBar style="dark" />
-          <RootNavigator />
-        </SafeAreaProvider>
-      </AuthProvider>
+      <AppSettingsProvider>
+        <AuthProvider>
+          <SafeAreaProvider>
+            <StatusBar style="dark" />
+            <RootNavigator />
+          </SafeAreaProvider>
+        </AuthProvider>
+      </AppSettingsProvider>
     </I18nProvider>
   );
 }

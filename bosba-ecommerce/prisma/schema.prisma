@@ -168,21 +168,26 @@ model DeliveryZone {
 }
 
 model Address {
-  id             String        @id @default(cuid())
-  userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName       String
-  phone          String
-  addressLine1   String
-  addressLine2   String?
-  city           String
-  province       String
-  deliveryZoneId String?
-  deliveryZone   DeliveryZone? @relation(fields: [deliveryZoneId], references: [id])
-  isDefault      Boolean       @default(false)
-  orders         Order[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String
+  phone            String
+  addressLine1     String
+  addressLine2     String?
+  city             String
+  province         String
+  district         String?
+  commune          String?
+  deliveryZoneId   String?
+  deliveryZone     DeliveryZone? @relation(fields: [deliveryZoneId], references: [id])
+  latitude         Float?
+  longitude        Float?
+  formattedAddress String?
+  isDefault        Boolean       @default(false)
+  orders           Order[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model Coupon {

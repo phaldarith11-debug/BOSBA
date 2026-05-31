@@ -97,7 +97,8 @@
       "province": "ខេត្ត/រាជធានី",
       "selectProvince": "ជ្រើសខេត្ត",
       "city": "ក្រុង / ស្រុក",
-      "address": "អាសយដ្ឋាន",
+      "commune": "ឃុំ / សង្កាត់",
+      "address": "អាសយដ្ឋានលម្អិត",
       "addressPlaceholder": "ផ្លូវ, លេខផ្ទះ, ភូមិ..."
     },
     "delivery": { "title": "តំបន់ដឹក", "days": "{days} ថ្ងៃ" },

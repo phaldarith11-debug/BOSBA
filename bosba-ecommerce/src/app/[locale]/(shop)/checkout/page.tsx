@@ -6,8 +6,10 @@ import { useRouter, Link } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { formatPrice, usdToKhr } from "@/lib/currency";
-import { Truck, CheckCircle, ChevronRight } from "lucide-react";
+import { Truck, CheckCircle, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DeliveryZone {
   id: string;
@@ -20,30 +22,32 @@ interface DeliveryZone {
   provinces: string[];
 }
 
+// ─── Canonical province list — must match seed.ts zone provinces exactly ──────
 const CAMBODIA_PROVINCES = [
   "Phnom Penh",
-  "Siem Reap",
-  "Sihanoukville",
-  "Battambang",
-  "Kampong Cham",
   "Kandal",
-  "Kampot",
-  "Takeo",
-  "Prey Veng",
+  "Siem Reap",
+  "Battambang",
+  "Banteay Meanchey",
+  "Kampong Cham",
+  "Kampong Chhnang",
   "Kampong Speu",
   "Kampong Thom",
-  "Kampong Chhnang",
+  "Kampot",
+  "Kep",
+  "Koh Kong",
   "Kratie",
   "Mondulkiri",
+  "Oddar Meanchey",
+  "Pailin",
+  "Preah Sihanouk",
+  "Preah Vihear",
+  "Prey Veng",
+  "Pursat",
   "Ratanakiri",
   "Stung Treng",
-  "Preah Vihear",
-  "Oddar Meanchey",
-  "Koh Kong",
-  "Kep",
-  "Pailin",
-  "Pursat",
   "Svay Rieng",
+  "Takeo",
   "Tbong Khmum",
 ];
 
@@ -55,13 +59,57 @@ const PAYMENT_METHODS = [
   { value: "PI_PAY",      label: "Pi Pay",               icon: "📱" },
 ];
 
+// ─── Province / zone matching ─────────────────────────────────────────────────
+
+function normalizeStr(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+const PROVINCE_ALIASES: Record<string, string> = {
+  "sihanoukville":  "preah sihanouk",
+  "preah sihanouk": "preah sihanouk",
+  "kratié":         "kratie",
+  "takéo":          "takeo",
+  "tboung khmum":   "tbong khmum",
+};
+
+function normalizeProvince(name: string): string {
+  const n = normalizeStr(name);
+  return PROVINCE_ALIASES[n] ?? n;
+}
+
 function zoneForProvince(province: string, zones: DeliveryZone[]): DeliveryZone | null {
+  if (!zones.length) return null;
   if (!province) return null;
-  return (
-    zones.find((z) => z.provinces.includes(province)) ??
-    zones.find((z) => z.provinces.includes("Other Province")) ??
-    null
+  const target = normalizeProvince(province);
+
+  // 1. Exact match
+  const exact = zones.find((z) =>
+    z.provinces.some((p) => normalizeProvince(p) === target)
   );
+  if (exact) return exact;
+
+  // 2. Partial match
+  const partial = zones.find((z) =>
+    z.provinces.some((p) => {
+      const pn = normalizeProvince(p);
+      return target.includes(pn) || pn.includes(target);
+    })
+  );
+  if (partial) return partial;
+
+  // 3. Explicit "Other Province" zone
+  const otherZone = zones.find((z) =>
+    z.provinces.some((p) => normalizeStr(p) === "other province")
+  );
+  if (otherZone) return otherZone;
+
+  // 4. Catchall: zone with empty provinces array covers everything
+  const catchAll = zones.find((z) => z.provinces.length === 0);
+  if (catchAll) return catchAll;
+
+  // Last resort: final zone in sorted list
+  return zones[zones.length - 1];
 }
 
 function effectiveFee(zone: DeliveryZone | null, subtotal: number): number {
@@ -69,6 +117,8 @@ function effectiveFee(zone: DeliveryZone | null, subtotal: number): number {
   if (zone.freeOverUsd !== null && subtotal >= zone.freeOverUsd) return 0;
   return zone.priceUsd;
 }
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
   const t = useTranslations("checkout");
@@ -81,20 +131,26 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
+
   const [form, setForm] = useState({
-    fullName:    session?.user?.name ?? "",
-    phone:       "",
-    addressLine1:"",
-    addressLine2:"",
-    city:        "",
-    province:    "",
-    paymentMethod: "COD",
-    notes:       "",
+    fullName:         session?.user?.name ?? "",
+    phone:            "",
+    addressLine1:     "",
+    addressLine2:     "",
+    city:             "",
+    province:         "",
+    district:         "",
+    commune:          "",
+    paymentMethod:    "COD",
+    notes:            "",
+    latitude:         null as number | null,
+    longitude:        null as number | null,
+    formattedAddress: "",
   });
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login?callbackUrl=/checkout");
-    fetch("/api/delivery-zones").then((r) => r.json()).then(setZones);
+    fetch("/api/delivery-zones").then((r) => r.json()).then(setZones).catch(() => {});
   }, [status, router]);
 
   useEffect(() => {
@@ -127,7 +183,14 @@ export default function CheckoutPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!zone) { toast.error("Select a province to calculate delivery"); return; }
+    if (!form.province) {
+      toast.error("Please select your province");
+      return;
+    }
+    if (!zone) {
+      toast.error("No delivery available for your province. Please contact support.");
+      return;
+    }
     setLoading(true);
     const res = await fetch("/api/orders", {
       method: "POST",
@@ -140,12 +203,17 @@ export default function CheckoutPage() {
           quantity: i.quantity, imageUrl: i.imageUrl,
         })),
         addressData: {
-          fullName:     form.fullName,
-          phone:        form.phone.startsWith("+855") ? form.phone : `+855${form.phone}`,
-          addressLine1: form.addressLine1,
-          addressLine2: form.addressLine2,
-          city:         form.city,
-          province:     form.province,
+          fullName:        form.fullName,
+          phone:           form.phone.startsWith("+855") ? form.phone : `+855${form.phone}`,
+          addressLine1:    form.addressLine1,
+          addressLine2:    form.addressLine2 || undefined,
+          city:            form.city,
+          province:        form.province,
+          district:        form.district || undefined,
+          commune:         form.commune  || undefined,
+          latitude:        form.latitude  ?? undefined,
+          longitude:       form.longitude ?? undefined,
+          formattedAddress:form.formattedAddress || undefined,
         },
         deliveryZoneId: zone.id,
         paymentMethod:  form.paymentMethod,
@@ -172,15 +240,24 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-8">{t("title")}</h1>
 
       <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
-        {/* ── Left column ────────────────────────────────────────── */}
+        {/* ── Left column ─────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
 
           {/* Delivery address */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-semibold text-gray-900 mb-4">{t("address.title")}</h2>
+          <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-red-500" />
+                <h2 className="font-semibold text-gray-900">Delivery Address</h2>
+              </div>
+            </div>
+
+            {/* Address fields */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.fullName")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("address.fullName")} <span className="text-red-500">*</span>
+                </label>
                 <input
                   required
                   value={form.fullName}
@@ -190,7 +267,9 @@ export default function CheckoutPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.phone")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("address.phone")} <span className="text-red-500">*</span>
+                </label>
                 <div className="flex gap-2">
                   <span className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-gray-50 text-gray-500 flex-shrink-0">+855</span>
                   <input
@@ -203,9 +282,10 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Province selector — drives zone selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.province")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("address.province")} <span className="text-red-500">*</span>
+                </label>
                 <select
                   required
                   value={form.province}
@@ -215,10 +295,15 @@ export default function CheckoutPage() {
                   <option value="">{t("address.selectProvince")}</option>
                   {CAMBODIA_PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
+                {form.province && !zone && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    No delivery zone configured for this province yet.
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.city")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.city")} <span className="text-red-500">*</span></label>
                 <input
                   required
                   value={form.city}
@@ -227,8 +312,20 @@ export default function CheckoutPage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.commune")} <span className="text-red-500">*</span></label>
+                <input
+                  required
+                  value={form.commune}
+                  onChange={(e) => setForm({ ...form, commune: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address.address")}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("address.address")} <span className="text-red-500">*</span>
+                </label>
                 <input
                   required
                   value={form.addressLine1}
@@ -240,7 +337,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Delivery fee card — auto-populated from province */}
+          {/* Delivery fee card */}
           {form.province && (
             <DeliveryCard
               zone={zone}
@@ -253,7 +350,7 @@ export default function CheckoutPage() {
             />
           )}
 
-          {/* Payment method */}
+          {/* Payment */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="font-semibold text-gray-900 mb-4">{t("payment.title")}</h2>
             <div className="space-y-2">
@@ -261,9 +358,7 @@ export default function CheckoutPage() {
                 <label
                   key={pm.value}
                   className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition-colors ${
-                    form.paymentMethod === pm.value
-                      ? "border-red-600 bg-red-50"
-                      : "border-gray-200 hover:border-gray-300"
+                    form.paymentMethod === pm.value ? "border-red-600 bg-red-50" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <input
@@ -294,7 +389,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* ── Order summary sidebar ───────────────────────────────── */}
+        {/* ── Order summary ─────────────────────────────────────── */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-sm sticky top-24 space-y-4">
             <h2 className="font-bold text-gray-900">{t("summary.title")}</h2>
@@ -310,7 +405,6 @@ export default function CheckoutPage() {
 
             <hr />
 
-            {/* Coupon */}
             <div className="flex gap-2">
               <input
                 value={couponCode}
@@ -341,7 +435,9 @@ export default function CheckoutPage() {
                     <span>{formatPrice(deliveryFeeUsd, currency, rate)}</span>
                   )
                 ) : (
-                  <span className="text-gray-400 text-xs">Select province</span>
+                  <span className="text-gray-400 text-xs">
+                    {form.province ? "Calculating…" : "Select province"}
+                  </span>
                 )}
               </div>
               {discount > 0 && (
@@ -364,14 +460,14 @@ export default function CheckoutPage() {
 
             <button
               type="submit"
-              disabled={loading || !zone}
+              disabled={loading || !form.province}
               className="w-full bg-red-600 text-white font-semibold py-3 rounded-full hover:bg-red-700 transition-colors disabled:opacity-50"
             >
               {loading ? t("submitting") : t("submit")}
             </button>
 
-            {!zone && form.province === "" && (
-              <p className="text-xs text-center text-gray-400">Enter your province to continue</p>
+            {!form.province && (
+              <p className="text-xs text-center text-gray-400">Select province to continue</p>
             )}
           </div>
         </div>
@@ -380,7 +476,8 @@ export default function CheckoutPage() {
   );
 }
 
-/* ─── Delivery info card ───────────────────────────────────────────────── */
+// ─── Delivery card ─────────────────────────────────────────────────────────────
+
 function DeliveryCard({
   zone, subtotal, fee, isFree, amountToFree, currency, rate,
 }: {
@@ -392,13 +489,7 @@ function DeliveryCard({
   currency: "USD" | "KHR";
   rate: number;
 }) {
-  if (!zone) {
-    return (
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700">
-        No delivery zone found for this province. Please contact support.
-      </div>
-    );
-  }
+  if (!zone) return null;
 
   const progressPct =
     zone.freeOverUsd && !isFree
@@ -406,7 +497,7 @@ function DeliveryCard({
       : null;
 
   return (
-    <div className={`rounded-2xl p-5 border-2 shadow-sm transition-colors ${isFree ? "border-green-400 bg-green-50" : "border-gray-200 bg-white"}`}>
+    <div className={`rounded-2xl p-5 border-2 shadow-sm ${isFree ? "border-green-400 bg-green-50" : "border-gray-200 bg-white"}`}>
       <div className="flex items-start gap-3">
         <div className={`p-2 rounded-xl flex-shrink-0 ${isFree ? "bg-green-100" : "bg-red-50"}`}>
           <Truck className={`h-5 w-5 ${isFree ? "text-green-600" : "text-red-600"}`} />
@@ -423,28 +514,18 @@ function DeliveryCard({
             )}
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
-            Estimated {zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"} delivery
+            Estimated {zone.estimatedDays} {zone.estimatedDays === 1 ? "day" : "days"}
           </p>
-
-          {/* Free-delivery progress bar */}
           {!isFree && zone.freeOverUsd && amountToFree !== null && amountToFree > 0 && (
             <div className="mt-3">
               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${progressPct}%` }}
-                />
+                <div className="bg-green-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }} />
               </div>
               <p className="text-xs text-gray-500 mt-1.5">
-                Add{" "}
-                <span className="font-semibold text-green-600">
-                  {formatPrice(amountToFree, currency, rate)}
-                </span>{" "}
-                more for <strong>free delivery!</strong>
+                Add <span className="font-semibold text-green-600">{formatPrice(amountToFree, currency, rate)}</span> more for <strong>free delivery!</strong>
               </p>
             </div>
           )}
-
           {isFree && zone.freeOverUsd && (
             <p className="text-xs text-green-600 font-medium mt-1">
               Free delivery on orders over {formatPrice(zone.freeOverUsd, currency, rate)} ✓

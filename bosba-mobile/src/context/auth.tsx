@@ -1,14 +1,24 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import * as SecureStore from "expo-secure-store";
-import * as Google from "expo-auth-session/providers/google";
 import * as Facebook from "expo-auth-session/providers/facebook";
 import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { Platform } from "react-native";
+import { API_BASE } from "../lib/api";
+
+// Google uses a SERVER-SIDE OAuth flow (see /api/mobile/auth/google/start +
+// /callback). The app opens that URL in a system browser; the backend talks to
+// Google with an HTTPS redirect_uri and hands the session token back via the app's
+// deep-link scheme. This works in Expo Go — unlike the native exp:// redirect that
+// Google rejects with "Error 400: invalid_request".
+//
+// The browser must reach the backend over PUBLIC HTTPS, so Google OAuth uses
+// EXPO_PUBLIC_PUBLIC_URL (your ngrok/https URL) when set, falling back to API_BASE.
+const OAUTH_BASE = process.env.EXPO_PUBLIC_PUBLIC_URL || API_BASE;
 
 WebBrowser.maybeCompleteAuthSession();
 
 const TOKEN_KEY = "bosba_auth_token";
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://10.0.2.2:3000";
 
 export type AuthUser = {
   id: string;
@@ -61,13 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Google auth session
-  const [googleRequest, googleResponse, promptGoogle] = Google.useAuthRequest({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-  });
-
   // Facebook auth session
   const [fbRequest, fbResponse, promptFacebook] = Facebook.useAuthRequest({
     clientId: process.env.EXPO_PUBLIC_FACEBOOK_APP_ID ?? "",
@@ -91,21 +94,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restore();
   }, []);
 
-  // Handle Google OAuth response
-  useEffect(() => {
-    if (googleResponse?.type === "success") {
-      const accessToken = googleResponse.authentication?.accessToken;
-      if (accessToken) {
-        callOAuthEndpoint("google", { accessToken }).then(async (result) => {
-          if (result.token && result.user) {
-            await storeSession(result.token, result.user);
-            setToken(result.token);
-            setUser(result.user);
-          }
-        });
-      }
+  // Exchange a session token for the user profile, then persist + activate it.
+  async function activateSession(authToken: string): Promise<{ error?: string }> {
+    try {
+      const res = await fetch(`${API_BASE}/api/mobile/auth/me`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      if (!res.ok) return { error: "Signed in, but could not load your profile. Please try again." };
+      const u: AuthUser = await res.json();
+      await storeSession(authToken, u);
+      setToken(authToken);
+      setUser(u);
+      return {};
+    } catch {
+      return { error: "Network error after sign-in. Check your connection." };
     }
-  }, [googleResponse]);
+  }
 
   // Handle Facebook OAuth response
   useEffect(() => {
@@ -142,9 +146,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle(): Promise<{ error?: string }> {
-    if (!googleRequest) return { error: "Google sign-in not configured" };
-    await promptGoogle();
-    return {};
+    // Deep link the browser will be sent back to once the backend has a session.
+    // Expo Go → exp://<host>/--/auth/google ; standalone → bosba://auth/google
+    const returnUrl = Linking.createURL("auth/google");
+    const startUrl =
+      `${OAUTH_BASE}/api/mobile/auth/google/start?return_url=${encodeURIComponent(returnUrl)}`;
+
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUrl);
+
+      // User closed the browser / hit cancel — not an error.
+      if (result.type !== "success" || !result.url) return {};
+
+      const { queryParams } = Linking.parse(result.url);
+      const err = typeof queryParams?.error === "string" ? queryParams.error : undefined;
+      const authToken = typeof queryParams?.token === "string" ? queryParams.token : undefined;
+
+      if (err) {
+        return { error: `Google sign-in failed (${err}). Please try again.` };
+      }
+      if (!authToken) {
+        return { error: "Google sign-in did not return a token. Please try again." };
+      }
+      return activateSession(authToken);
+    } catch {
+      return {
+        error:
+          "Could not start Google sign-in.\n\n" +
+          "Make sure EXPO_PUBLIC_PUBLIC_URL points to your public HTTPS URL " +
+          "(e.g. your ngrok address) and the backend is running.",
+      };
+    }
   }
 
   async function signInWithFacebook(): Promise<{ error?: string }> {

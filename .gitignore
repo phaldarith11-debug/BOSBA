@@ -1,0 +1,8 @@
+# Large build artifacts — do not commit (use GitHub Releases / EAS instead)
+*.apk
+*.aab
+*.ipa
+
+# OS / editor
+.DS_Store
+Thumbs.db
