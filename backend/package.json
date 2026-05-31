@@ -1,0 +1,19 @@
+{
+  "name": "@bosba/backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared backend services for BOSBA: payments, notifications, uploads, utils.",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./payments/payway": "./payments/payway.ts",
+    "./notifications/telegram": "./notifications/telegram.ts",
+    "./notifications/email": "./notifications/email.ts",
+    "./uploads/cloudinary": "./uploads/cloudinary.ts",
+    "./utils/currency": "./utils/currency.ts"
+  },
+  "dependencies": {
+    "cloudinary": "^2.10.0"
+  }
+}

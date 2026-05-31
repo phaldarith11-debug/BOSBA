@@ -5,6 +5,7 @@
   "description": "BOSBA monorepo root — lightweight npm workspaces (no turbo).",
   "workspaces": [
     "bosba-ecommerce",
-    "database"
+    "database",
+    "backend"
   ]
 }
