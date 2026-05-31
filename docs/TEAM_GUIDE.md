@@ -1,26 +1,27 @@
 # TEAM GUIDE
 
-## Project at a glance
+## Project at a glance (npm workspaces, no turbo)
 ```
 BOSBA/
-├── bosba-ecommerce/   Website + admin dashboard + API backend + Prisma (ONE Next.js app)
-├── bosba-mobile/      Expo mobile app (calls the API over HTTP)
-├── dashboard/         Scaffold only — admin still lives in bosba-ecommerce
-├── backend/           Scaffold only — API still lives in bosba-ecommerce
-├── database/          Scaffold only — schema still lives in bosba-ecommerce/prisma
+├── bosba-ecommerce/   Website + admin dashboard + API route handlers + NextAuth (Next.js app)
+├── bosba-mobile/      Expo mobile app (NOT a workspace — calls the API over HTTP)
+├── database/          @bosba/database — Prisma schema, seed, client  ✅ real package
+├── backend/           @bosba/backend  — framework-free services       ✅ real package
+├── dashboard/         scaffold only — admin still lives in bosba-ecommerce (deferred)
 ├── docs/              Documentation (this folder)
 └── README.md
 ```
+Root `workspaces: [bosba-ecommerce, database, backend]`. Run `npm install` from the BOSBA root.
 
-## Important: scaffold vs. live
-`dashboard/`, `backend/`, and `database/` are **empty scaffolds with plans** — the real, working
-code still lives inside `bosba-ecommerce`. This keeps the website and mobile app unbroken. See each
-folder's `README.md` for what would move later and why it hasn't moved yet.
-
-## Why not split them now?
-`bosba-ecommerce` is one Next.js app where website + admin + API + Prisma are integrated by design.
-Splitting them into separate running apps is the complex monorepo we are avoiding. Keep it simple:
-one app, clearly documented.
+## What's a real package vs. what stays in the app
+- ✅ `@bosba/database` and `@bosba/backend` are real workspace packages; `bosba-ecommerce`
+  imports them. The old `src/lib/*` files are thin re-export shims, so `@/lib/*` imports are
+  unchanged.
+- 🗒 `dashboard/` is still a scaffold: admin pages are Next.js routes, so a real split means a
+  SECOND Next.js app — deferred on purpose.
+- Stays in `bosba-ecommerce` by necessity: all `api/**` route handlers, NextAuth (`auth.ts`,
+  `mobile-auth.ts`, `google-mobile-oauth.ts`), middleware. `@bosba/backend` must never depend on
+  next/next-auth/react (it duplicates React and breaks the build).
 
 ## Naming & branches
 - Branch per feature; current work branch: `aba-integration`.

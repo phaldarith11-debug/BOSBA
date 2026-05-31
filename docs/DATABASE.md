@@ -1,31 +1,29 @@
 # DATABASE — Prisma / Postgres
 
-**Status:** the live schema is **inside** `bosba-ecommerce/prisma/`. The top-level `database/`
-folder is an empty scaffold (see `database/README.md`). Do not move the schema yet.
+**Status:** ✅ extracted into the `@bosba/database` workspace package. Authoritative details live
+in `database/README.md`.
 
-## Where it lives today
+## Where it lives
 | Area | Path |
 |------|------|
-| Schema | `bosba-ecommerce/prisma/schema.prisma` |
-| Seed | `bosba-ecommerce/prisma/seed.ts` |
-| Prisma config | `bosba-ecommerce/prisma.config.ts` |
-| Client singleton | `bosba-ecommerce/src/lib/prisma.ts` |
-| Migrations | none yet — uses `prisma db push` (no migration history) |
+| Schema | `database/prisma/schema.prisma` |
+| Seed | `database/seeds/seed.ts` |
+| Client singleton + type re-exports | `database/index.ts` (`@bosba/database`) |
+| Prisma config | `bosba-ecommerce/prisma.config.ts` → schema `../database/prisma/schema.prisma` |
+| Compat shim | `bosba-ecommerce/src/lib/prisma.ts` re-exports `@bosba/database` |
+| Migrations | none yet — uses `prisma db push` |
 
 **Engine:** one Supabase Postgres, shared by website + admin + API.
 
-## Commands
+## Commands (run from `bosba-ecommerce`, where `.env` lives)
 ```bash
 cd bosba-ecommerce
-npx prisma generate     # generate client
-npx prisma db push      # apply schema to DB
-npx prisma db seed      # seed data
-npx prisma studio       # browse data
+npx prisma generate
+npm run db:push      # apply schema
+npm run db:seed      # runs ../database/seeds/seed.ts  (writes data — use a safe DB)
+npx prisma studio
 ```
 
-## ⚠️ Known drift
-Schema has `Address.commune` that the live DB may be missing. Sync with `npx prisma db push`.
-
-## Related env
-`DATABASE_URL`, `DIRECT_URL` in `bosba-ecommerce/.env` — see `docs/ENVIRONMENT.md`.
+## Known drift
+Schema has `Address.commune` the live DB may lack → `npm run db:push`.
 </content>
