@@ -7,10 +7,12 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { useWishlistStore } from "@/store/wishlist";
+import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Header() {
   const t = useTranslations("nav");
+  const { brandName, brandLogo } = useSiteSettings();
   const { data: session } = useSession();
   const totalItems = useCartStore((s) => s.totalItems());
   const wishlistCount = useWishlistStore((s) => s.count());
@@ -79,11 +81,20 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main bar */}
         <div className="flex items-center justify-between h-16 gap-2">
-          {/* Logo */}
+          {/* Logo — brand name/logo come from the dashboard CMS (falls back to "BOSBA") */}
           <Link href="/" className="flex-shrink-0 group">
-            <span className="text-2xl font-black tracking-tight gradient-text transition-opacity group-hover:opacity-85">
-              BOSBA
-            </span>
+            {brandLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={brandLogo}
+                alt={brandName}
+                className="h-8 w-auto object-contain transition-opacity group-hover:opacity-85"
+              />
+            ) : (
+              <span className="text-2xl font-black tracking-tight gradient-text transition-opacity group-hover:opacity-85">
+                {brandName}
+              </span>
+            )}
           </Link>
 
           {/* Desktop search */}

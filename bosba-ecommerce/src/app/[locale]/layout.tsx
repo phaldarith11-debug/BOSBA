@@ -5,6 +5,8 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Providers } from "../providers";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { getSiteSettings } from "@/lib/site-settings";
 import "../globals.css";
 
 const inter = Inter({
@@ -113,14 +115,25 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const meta = LOCALE_META[locale as Locale] ?? LOCALE_META.en;
 
+  // Brand identity from the dashboard CMS (controls website + mobile alike).
+  const site = await getSiteSettings();
+  const brandVars = [
+    site.primaryColor ? `--brand-primary:${site.primaryColor};` : "",
+    site.secondaryColor ? `--brand-secondary:${site.secondaryColor};` : "",
+  ].join("");
+
   return (
     <html
       lang={meta.lang}
       className={`${inter.variable} ${battambang.variable} ${notoSansJP.variable} ${notoSansSC.variable}`}
     >
       <body className={FONT_CLASS[locale as Locale] ?? inter.className}>
+        {/* Override brand color tokens from the dashboard (loaded after globals.css). */}
+        {brandVars && <style dangerouslySetInnerHTML={{ __html: `:root{${brandVars}}` }} />}
         <NextIntlClientProvider messages={messages}>
-          <Providers>{children}</Providers>
+          <SiteSettingsProvider value={site}>
+            <Providers>{children}</Providers>
+          </SiteSettingsProvider>
         </NextIntlClientProvider>
       </body>
     </html>

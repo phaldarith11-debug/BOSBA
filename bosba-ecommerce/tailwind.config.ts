@@ -40,7 +40,7 @@ const config: Config = {
       },
       backgroundImage: {
         "hero-gradient":  "linear-gradient(135deg, #7f1d1d 0%, #991b1b 40%, #c31111 100%)",
-        "brand-gradient": "linear-gradient(135deg, #e51b1b 0%, #7f1d1d 100%)",
+        "brand-gradient": "linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%)",
         "dark-gradient":  "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
       },
       animation: {
