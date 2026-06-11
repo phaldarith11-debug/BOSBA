@@ -6,9 +6,9 @@ import {
 import { useRouter, Link } from "expo-router";
 import { Eye, EyeOff, ArrowRight, User, Mail, Phone, Lock } from "lucide-react-native";
 import { useAuth } from "../../src/context/auth";
+import { fetchWithTimeout, friendlyError } from "../../src/lib/api";
 
 const BRAND = "#e51b1b";
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://10.0.2.2:3000";
 
 export default function RegisterScreen() {
   const { signIn } = useAuth();
@@ -26,20 +26,24 @@ export default function RegisterScreen() {
     if (form.password.length < 8) { Alert.alert("Error", "Password must be at least 8 characters"); return; }
 
     setLoading(true);
-    const res = await fetch(`${API_BASE}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: form.name, email: form.email.trim(), phone: form.phone ? `+855${form.phone}` : undefined, password: form.password }),
-    });
-    setLoading(false);
+    try {
+      const res = await fetchWithTimeout(`/api/auth/register`, {
+        method: "POST",
+        body: JSON.stringify({ name: form.name, email: form.email.trim(), phone: form.phone ? `+855${form.phone}` : undefined, password: form.password }),
+      });
 
-    if (res.ok) {
-      Alert.alert("Account Created!", "A verification code has been sent to your email. Please verify before signing in.", [
-        { text: "OK", onPress: () => router.replace("/(auth)/login") },
-      ]);
-    } else {
-      const data = await res.json();
-      Alert.alert("Registration Failed", data.error ?? "Please try again.");
+      if (res.ok) {
+        Alert.alert("Account Created!", "A verification code has been sent to your email. Please verify before signing in.", [
+          { text: "OK", onPress: () => router.replace("/(auth)/login") },
+        ]);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        Alert.alert("Registration Failed", data.error ?? "Please try again.");
+      }
+    } catch (e) {
+      Alert.alert("Registration Failed", friendlyError(e).message);
+    } finally {
+      setLoading(false);
     }
   }
 

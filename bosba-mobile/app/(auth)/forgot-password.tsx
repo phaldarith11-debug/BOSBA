@@ -4,9 +4,9 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Mail, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react-native";
+import { fetchWithTimeout, friendlyError } from "../../src/lib/api";
 
 const BRAND = "#e51b1b";
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://10.0.2.2:3000";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -17,13 +17,18 @@ export default function ForgotPasswordScreen() {
   async function handleSubmit() {
     if (!email) { Alert.alert("Error", "Please enter your email address"); return; }
     setLoading(true);
-    await fetch(`${API_BASE}/api/auth/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim() }),
-    });
-    setLoading(false);
-    setSent(true);
+    try {
+      await fetchWithTimeout(`/api/auth/forgot-password`, {
+        method: "POST",
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      // Always show the same confirmation (don't reveal whether the email exists).
+      setSent(true);
+    } catch (e) {
+      Alert.alert("Couldn't send reset link", friendlyError(e).message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (sent) {

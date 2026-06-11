@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, Image, ActivityIndicator, Pressable, RefreshControl,
+  useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Search, X } from "lucide-react-native";
@@ -15,6 +16,11 @@ const BRAND = "#e51b1b";
 export default function ProductsScreen() {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
+
+  // Responsive grid: 2 columns on phones, more on iPad / large screens so cards
+  // don't stretch. FlatList needs a changing `key` when numColumns changes.
+  const { width } = useWindowDimensions();
+  const numColumns = width >= 1000 ? 4 : width >= 700 ? 3 : 2;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,10 +172,11 @@ export default function ProductsScreen() {
         </View>
       ) : (
         <FlatList
+          key={numColumns}
           data={products}
           keyExtractor={(item) => item.id}
           renderItem={renderProduct}
-          numColumns={2}
+          numColumns={numColumns}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.list}
           refreshControl={

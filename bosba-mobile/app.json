@@ -7,14 +7,14 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "bosba",
-    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bosba.shop",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Used for scanning QR codes.",
-        "NSPhotoLibraryUsageDescription": "Used for uploading profile photos."
+        "NSPhotoLibraryUsageDescription": "Used for uploading profile photos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

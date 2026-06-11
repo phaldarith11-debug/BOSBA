@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { formatUsd, formatKhr } from "@/lib/currency";
+import { formatUsd } from "@/lib/currency";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 async function getReportData() {

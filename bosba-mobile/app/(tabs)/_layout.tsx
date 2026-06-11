@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { ShoppingCart, Home, Grid, User } from "lucide-react-native";
 import { View, Text, StyleSheet, type ColorValue } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCartStore } from "../../src/store/cart";
 import { useI18n } from "../../src/context/i18n";
 import { LanguageSwitcher } from "../../src/components/common/LanguageSwitcher";
@@ -21,6 +22,10 @@ function CartIcon({ color, size }: { color: ColorValue; size: number }) {
 
 export default function TabLayout() {
   const { t } = useI18n();
+  // Respect the bottom safe area (iPhone home indicator, Android gesture nav) so
+  // tab labels are never crowded against the home bar. On devices with hardware
+  // buttons insets.bottom is 0, preserving the original 60pt/6pt phone layout.
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -34,8 +39,8 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: "#f1f5f9",
           paddingTop: 4,
-          paddingBottom: 6,
-          height: 60,
+          paddingBottom: Math.max(insets.bottom, 6),
+          height: 60 + insets.bottom,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
       }}

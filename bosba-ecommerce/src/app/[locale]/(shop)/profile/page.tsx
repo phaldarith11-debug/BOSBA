@@ -5,7 +5,7 @@ import { useRouter, Link } from "@/i18n/navigation";
 import toast from "react-hot-toast";
 import {
   MessageCircle, CheckCircle2, XCircle, ExternalLink, Loader2, Unlink,
-  User, Camera, Save, Eye, EyeOff, Lock, Package, ShoppingBag, AlertCircle,
+  Camera, Save, Eye, EyeOff, Lock, Package, ShoppingBag, AlertCircle,
 } from "lucide-react";
 
 type Profile = {

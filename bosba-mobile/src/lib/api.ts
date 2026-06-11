@@ -1,24 +1,66 @@
+import Constants from "expo-constants";
+
+// ── Resolving the API base URL ──────────────────────────────────────────────
+//
 // Android emulator: http://10.0.2.2:3000
-// Physical device (same WiFi): http://YOUR_LAN_IP:3000  (run: ipconfig | findstr IPv4)
+// Physical device (same WiFi): http://YOUR_LAN_IP:3000
 // Production: https://yourdomain.com
 //
-// API_BASE comes from EXPO_PUBLIC_API_URL in .env. If that var is empty, it almost
-// always means Metro served a stale bundle — restart with `npx expo start --clear`.
-// The fallback points at the LAN dev server so the app degrades to a reachable
-// host instead of a non-existent placeholder domain. KEEP THIS IP CURRENT —
-// it must match your PC's Wi-Fi IPv4 (run `ipconfig`); DHCP can reassign it.
-const FALLBACK_API_BASE = "http://192.168.1.14:3000";
-export const API_BASE = process.env.EXPO_PUBLIC_API_URL || FALLBACK_API_BASE;
+// The #1 cause of "Cannot reach server" in dev is a STALE LAN IP: your PC's
+// Wi-Fi address changes when the router reassigns DHCP, but .env still points at
+// the old one. To make this self-healing, in development we read the IP of the
+// machine actually serving the Metro bundle (Expo exposes it as `hostUri`, e.g.
+// "192.168.110.76:8081"). That host is, by definition, reachable from the device
+// right now — so we rewrite a stale LAN IP in the configured base to match it.
+const DEV_PORT = 3000;
+const FALLBACK_API_BASE = "http://192.168.110.76:3000";
+
+// The LAN IP of the PC running Metro, or null (tunnel/localhost/emulator alias).
+function liveMetroHost(): string | null {
+  const hostUri =
+    Constants.expoConfig?.hostUri ??
+    // older field present in some Expo Go payloads
+    (Constants as unknown as { expoGoConfig?: { debuggerHost?: string } })
+      .expoGoConfig?.debuggerHost ??
+    null;
+  if (!hostUri) return null;
+  const host = hostUri.split(":")[0];
+  if (!host || host === "localhost" || host === "127.0.0.1") return null;
+  return host;
+}
+
+// If `base` uses a LAN IP that no longer matches the live Metro host, swap the
+// host so the app keeps working without anyone editing .env. The 10.0.2.2
+// emulator alias and non-IP hosts (domains, tunnels) are left untouched.
+function alignHostWithMetro(base: string): string {
+  if (!__DEV__) return base;
+  const live = liveMetroHost();
+  if (!live) return base;
+  const m = base.match(/^(https?:\/\/)([^/:]+)(:\d+)?(\/.*)?$/i);
+  if (!m) return base;
+  const [, scheme, host, port = "", rest = ""] = m;
+  const isLanIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+  if (!isLanIp || host === "10.0.2.2" || host === live) return base;
+  return `${scheme}${live}${port || `:${DEV_PORT}`}${rest}`;
+}
+
+function resolveApiBase(): string {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+  const configured = envUrl || FALLBACK_API_BASE;
+  return alignHostWithMetro(configured);
+}
+
+export const API_BASE = resolveApiBase();
 
 if (__DEV__) {
-  if (!process.env.EXPO_PUBLIC_API_URL) {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+  if (!envUrl) {
     console.warn(
-      `[api] ⚠️ EXPO_PUBLIC_API_URL is NOT set — using fallback ${FALLBACK_API_BASE}.\n` +
-        `      Set it in bosba-mobile/.env to your PC's LAN IP and restart: npx expo start -c`
+      `[api] ⚠️ EXPO_PUBLIC_API_URL is not set — using ${API_BASE} ` +
+        `(auto-detected from Metro / fallback). Set it in bosba-mobile/.env for emulator/tunnel/prod.`
     );
-  } else {
-    console.log(`[api] API_BASE = ${API_BASE}`);
   }
+  console.log(`[api] API_BASE = ${API_BASE} (Metro host: ${liveMetroHost() ?? "n/a"})`);
 }
 
 const TIMEOUT_MS = 12_000; // 12 seconds — generous for mobile networks
@@ -27,20 +69,28 @@ const RETRY_BASE_DELAY_MS = 700;
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// A fetch timeout fires `AbortController.abort()`. Depending on the JS engine
+// that surfaces as name "AbortError" OR a message like "Aborted" /
+// "Fetch request has been canceled" (Expo SDK 56). Detect all of them.
+function isAbort(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.name === "AbortError" || /abort|cancel/i.test(error.message);
+}
+
 // Network/transport failures that are worth retrying (host briefly unreachable,
 // flaky Wi-Fi, timeout). HTTP 4xx/5xx responses are NOT retried here.
 function isRetryable(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
-  if (error.name === "AbortError") return true; // timeout
+  if (isAbort(error)) return true; // timeout
   return /Network request failed|Failed to fetch|NoRouteToHost|Host unreachable|Unable to resolve host|ECONN|ETIMEDOUT|socket/i.test(
     error.message
   );
 }
 
 // Map low-level errors to a clear, actionable message for the UI.
-function friendlyError(error: unknown): Error {
+export function friendlyError(error: unknown): Error {
   if (error instanceof Error) {
-    if (error.name === "AbortError") {
+    if (isAbort(error)) {
       return new Error(
         "Request timed out.\n\nTips:\n• Make sure your phone and PC are on the same WiFi\n• Check EXPO_PUBLIC_API_URL in your .env file\n• Android emulator: use 10.0.2.2, not localhost\n• Physical device: use your PC's LAN IP"
       );
@@ -55,24 +105,39 @@ function friendlyError(error: unknown): Error {
   return new Error("Unexpected error");
 }
 
-// Single attempt with timeout.
-async function fetchOnce(path: string, init?: RequestInit) {
+/**
+ * fetch() against API_BASE with a hard timeout. Returns the raw Response so the
+ * caller can inspect status/body. On a transport failure it throws the RAW
+ * error (so retry logic can classify it) — wrap calls in `friendlyError(e)` to
+ * present a clear message. Shared by the auth screens so every network call in
+ * the app fails fast with consistent timeout behaviour.
+ */
+export async function fetchWithTimeout(
+  path: string,
+  init?: RequestInit,
+  timeoutMs = TIMEOUT_MS
+): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
+    return await fetch(`${API_BASE}${path}`, {
       ...init,
       signal: controller.signal,
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
-      throw new Error(err.error ?? `HTTP ${res.status}`);
-    }
-    return res.json();
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Single attempt with timeout.
+async function fetchOnce(path: string, init?: RequestInit) {
+  const res = await fetchWithTimeout(path, init);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `Server error (${res.status})` }));
+    throw new Error(err.error ?? `HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
 async function apiFetch(path: string, init?: RequestInit) {

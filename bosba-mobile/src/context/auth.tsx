@@ -4,7 +4,7 @@ import * as Facebook from "expo-auth-session/providers/facebook";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { Platform } from "react-native";
-import { API_BASE } from "../lib/api";
+import { API_BASE, fetchWithTimeout, friendlyError } from "../lib/api";
 
 // Google uses a SERVER-SIDE OAuth flow (see /api/mobile/auth/google/start +
 // /callback). The app opens that URL in a system browser; the backend talks to
@@ -51,18 +51,17 @@ async function storeSession(token: string, user: AuthUser) {
 
 async function callOAuthEndpoint(endpoint: string, body: object): Promise<{ error?: string; token?: string; user?: AuthUser }> {
   try {
-    const res = await fetch(`${API_BASE}/api/mobile/auth/${endpoint}`, {
+    const res = await fetchWithTimeout(`/api/mobile/auth/${endpoint}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     if (!res.ok) {
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       return { error: data.error ?? "Authentication failed" };
     }
     return res.json();
-  } catch {
-    return { error: "Network error. Check your connection." };
+  } catch (e) {
+    return { error: friendlyError(e).message };
   }
 }
 
@@ -82,11 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const stored = await SecureStore.getItemAsync(TOKEN_KEY);
         if (stored) {
-          const res = await fetch(`${API_BASE}/api/mobile/auth/me`, {
+          const res = await fetchWithTimeout(`/api/mobile/auth/me`, {
             headers: { Authorization: `Bearer ${stored}` },
           });
           if (res.ok) { setToken(stored); setUser(await res.json()); }
-          else await SecureStore.deleteItemAsync(TOKEN_KEY);
+          // 401 → token is invalid/expired; drop it. Network errors → keep the
+          // token so the user stays signed in once connectivity returns.
+          else if (res.status === 401) await SecureStore.deleteItemAsync(TOKEN_KEY);
         }
       } catch {}
       finally { setLoading(false); }
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Exchange a session token for the user profile, then persist + activate it.
   async function activateSession(authToken: string): Promise<{ error?: string }> {
     try {
-      const res = await fetch(`${API_BASE}/api/mobile/auth/me`, {
+      const res = await fetchWithTimeout(`/api/mobile/auth/me`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       if (!res.ok) return { error: "Signed in, but could not load your profile. Please try again." };
@@ -106,8 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(authToken);
       setUser(u);
       return {};
-    } catch {
-      return { error: "Network error after sign-in. Check your connection." };
+    } catch (e) {
+      return { error: friendlyError(e).message };
     }
   }
 
@@ -129,19 +130,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string): Promise<{ error?: string }> {
     try {
-      const res = await fetch(`${API_BASE}/api/mobile/auth/login`, {
+      const res = await fetchWithTimeout(`/api/mobile/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
-      if (!res.ok) { const d = await res.json(); return { error: d.error ?? "Invalid credentials" }; }
+      if (!res.ok) { const d = await res.json().catch(() => ({})); return { error: d.error ?? "Invalid credentials" }; }
       const { token: t, user: u } = await res.json();
       await storeSession(t, u);
       setToken(t);
       setUser(u);
       return {};
-    } catch {
-      return { error: "Network error. Check your connection." };
+    } catch (e) {
+      return { error: friendlyError(e).message };
     }
   }
 
@@ -224,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function refreshUser() {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/mobile/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetchWithTimeout(`/api/mobile/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) setUser(await res.json());
     } catch {}
   }
