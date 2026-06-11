@@ -377,4 +377,5 @@ npx prettier --write .
 - Supabase docs: https://supabase.com/docs
 #   B O S B A  
  #   B O S B A  
+ #   B O S B A  
  
