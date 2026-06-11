@@ -375,3 +375,5 @@ npx prettier --write .
 - Next.js docs: https://nextjs.org/docs
 - Prisma docs: https://www.prisma.io/docs
 - Supabase docs: https://supabase.com/docs
+#   B O S B A  
+ 
