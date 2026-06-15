@@ -40,6 +40,10 @@
     "tsx": "^4.22.3",
     "zustand": "^5.0.13"
   },
+  "optionalDependencies": {
+    "@parcel/watcher-linux-x64-glibc": "2.5.6",
+    "@parcel/watcher-linux-x64-musl": "2.5.6"
+  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
