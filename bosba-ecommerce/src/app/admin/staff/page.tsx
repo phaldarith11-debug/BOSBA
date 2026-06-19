@@ -14,15 +14,19 @@ interface StaffMember {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  ADMIN:   "bg-red-100 text-red-700",
-  MANAGER: "bg-blue-100 text-blue-700",
-  EDITOR:  "bg-purple-100 text-purple-700",
+  ADMIN:     "bg-red-100 text-red-700",
+  MANAGER:   "bg-blue-100 text-blue-700",
+  EDITOR:    "bg-purple-100 text-purple-700",
+  SELLER:    "bg-emerald-100 text-emerald-700",
+  DEVELOPER: "bg-indigo-100 text-indigo-700",
 };
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
-  ADMIN:   "Full access. Can manage staff, settings, and all content.",
-  MANAGER: "Can manage products, orders, banners, and coupons. Cannot manage staff or system settings.",
-  EDITOR:  "Can manage products, categories, and banners only.",
+  ADMIN:     "Full access. Can manage staff, settings, and all content.",
+  MANAGER:   "Can manage products, orders, banners, and coupons. Cannot manage staff or system settings.",
+  EDITOR:    "Can manage products, categories, and banners only.",
+  SELLER:    "Marketplace vendor. Manages only their own products, orders, and payouts in the Seller Center.",
+  DEVELOPER: "Platform/system access. Manages feature flags, themes, layout, API and maintenance tools.",
 };
 
 export default function StaffPage() {
@@ -138,6 +142,8 @@ export default function StaffPage() {
                 <option value="EDITOR">Editor</option>
                 <option value="MANAGER">Manager</option>
                 <option value="ADMIN">Admin</option>
+                <option value="SELLER">Seller</option>
+                <option value="DEVELOPER">Developer</option>
               </select>
             </div>
             <div className="sm:col-span-2 flex justify-end gap-3">
@@ -192,6 +198,8 @@ export default function StaffPage() {
                         <option value="EDITOR">EDITOR</option>
                         <option value="MANAGER">MANAGER</option>
                         <option value="ADMIN">ADMIN</option>
+                        <option value="SELLER">SELLER</option>
+                        <option value="DEVELOPER">DEVELOPER</option>
                       </select>
                       <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none" />
                     </div>

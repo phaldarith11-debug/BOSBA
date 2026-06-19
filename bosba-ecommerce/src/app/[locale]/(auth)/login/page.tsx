@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { signIn, getProviders } from "next-auth/react";
+import { signIn, getProviders, getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { homeForRole } from "@/lib/authz";
 import { Eye, EyeOff, ArrowRight, Mail, Lock, AlertCircle } from "lucide-react";
 
 /* ── Brand icons ────────────────────────────────────────────────────── */
@@ -106,6 +107,18 @@ export default function LoginPage() {
     setLoading(false);
     if (res?.ok) {
       toast.success(t("success"));
+      // If the user didn't request a specific page, route staff/sellers/devs to
+      // their dashboard. Dashboard paths live outside the [locale] segment, so
+      // use a hard navigation to avoid the i18n router prefixing the locale.
+      if (callbackUrl === "/") {
+        const session = await getSession();
+        const role = (session?.user as { role?: string } | undefined)?.role;
+        const home = homeForRole(role);
+        if (home !== "/") {
+          window.location.href = home;
+          return;
+        }
+      }
       router.push(callbackUrl);
       router.refresh();
     } else {

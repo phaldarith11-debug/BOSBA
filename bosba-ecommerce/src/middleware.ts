@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { getToken } from "next-auth/jwt";
 import { routing } from "./i18n/routing";
+import { DASHBOARD_AREAS, AREA_LOGIN_PATHS, canAccessArea } from "./lib/authz";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -17,18 +18,25 @@ function isPrivatePath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── Admin routes ──────────────────────────────────────────
-  if (pathname.startsWith("/admin")) {
+  // ── Dashboard areas (admin / seller / developer) ──────────
+  const matchedArea = DASHBOARD_AREAS.find(
+    (a) => pathname === a.prefix || pathname.startsWith(a.prefix + "/")
+  );
+  if (matchedArea) {
+    const { area } = matchedArea;
+    const loginPath = AREA_LOGIN_PATHS[area];
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    const isAdmin = token && (token as { role?: string }).role === "ADMIN";
+    const role = (token as { role?: string } | null)?.role;
+    const allowed = canAccessArea(role, area);
 
-    if (pathname === "/admin/login") {
-      if (isAdmin) return NextResponse.redirect(new URL("/admin", request.url));
+    // The login page itself is public; bounce already-authorized users in.
+    if (pathname === loginPath) {
+      if (allowed) return NextResponse.redirect(new URL(matchedArea.prefix, request.url));
       return NextResponse.next();
     }
 
-    if (!isAdmin) {
-      const url = new URL("/admin/login", request.url);
+    if (!allowed) {
+      const url = new URL(loginPath, request.url);
       url.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(url);
     }
