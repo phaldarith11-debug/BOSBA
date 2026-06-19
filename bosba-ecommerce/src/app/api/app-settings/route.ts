@@ -19,6 +19,11 @@ const PUBLIC_KEYS = [
   "homepage_hero_subtitle_km",
   "usd_khr_rate",
   "free_delivery_over_usd",
+  // Manual ABA / KHQR receiving details (public merchant info, never the API key)
+  "aba_account_name",
+  "aba_account_number",
+  "aba_khqr_image",
+  "aba_payment_instructions",
 ];
 
 export async function GET() {

@@ -158,7 +158,7 @@ export function PaymentPageClient({ order }: { order: OrderData }) {
           <p className="text-sm text-gray-500 mt-1">Order #{order.orderNumber}</p>
           <div className="mt-2 flex items-center justify-center gap-3">
             <span className="text-2xl font-bold text-red-600">{formatUsd(order.totalUsd)}</span>
-            <span className="text-gray-400 text-sm">≈ ៛{formatKhr(order.totalKhr)}</span>
+            <span className="text-gray-400 text-sm">≈ {formatKhr(order.totalKhr)}</span>
           </div>
         </div>
 

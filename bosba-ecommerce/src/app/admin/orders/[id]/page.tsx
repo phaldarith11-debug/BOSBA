@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatUsd } from "@/lib/currency";
 import { OrderStatusUpdater } from "../OrderStatusUpdater";
 import { ManualPayConfirm } from "../ManualPayConfirm";
+import { PaymentReview } from "./PaymentReview";
 import { TrackingInput } from "./TrackingInput";
 import { PrintInvoice } from "./PrintInvoice";
 
@@ -145,6 +146,49 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
               </div>
             )}
           </div>
+
+          {/* Manual payment proof + review */}
+          {(order.paymentMethod === "ABA_BANK" || order.paymentProofUrl || order.paymentRefId ||
+            ["PENDING_PAYMENT", "PAYMENT_SUBMITTED", "PAYMENT_REJECTED"].includes(order.status)) && (
+            <div className="bg-white rounded-2xl shadow-sm p-5">
+              <h2 className="font-semibold text-gray-900 mb-3">Payment Proof</h2>
+
+              {order.paymentRefId ? (
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-gray-500">Reference</span>
+                  <span className="font-mono font-medium text-gray-900">{order.paymentRefId}</span>
+                </div>
+              ) : null}
+              {order.paymentSubmittedAt ? (
+                <div className="flex items-center justify-between text-sm mb-3">
+                  <span className="text-gray-500">Submitted</span>
+                  <span className="text-gray-700">{new Date(order.paymentSubmittedAt).toLocaleString()}</span>
+                </div>
+              ) : null}
+
+              {order.paymentProofUrl ? (
+                <a href={order.paymentProofUrl} target="_blank" rel="noopener noreferrer" className="block relative w-full h-48 rounded-xl overflow-hidden border mb-3 bg-gray-50">
+                  <Image src={order.paymentProofUrl} alt="Payment proof" fill className="object-contain" sizes="320px" unoptimized />
+                </a>
+              ) : (
+                <p className="text-sm text-gray-400 mb-3">No screenshot uploaded yet.</p>
+              )}
+
+              {order.paymentRejectReason && order.status === "PAYMENT_REJECTED" && (
+                <p className="text-sm text-red-600 bg-red-50 rounded-lg p-2 mb-3">
+                  Rejected: {order.paymentRejectReason}
+                </p>
+              )}
+
+              {order.status === "PAYMENT_SUBMITTED" ? (
+                <PaymentReview orderId={order.id} />
+              ) : order.paymentStatus !== "PAID" ? (
+                <p className="text-xs text-gray-400">
+                  Approve/Reject becomes available once the customer submits payment proof.
+                </p>
+              ) : null}
+            </div>
+          )}
 
           {/* Customer */}
           <div className="bg-white rounded-2xl shadow-sm p-5">

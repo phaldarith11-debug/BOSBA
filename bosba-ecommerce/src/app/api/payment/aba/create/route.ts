@@ -3,8 +3,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createABATransaction } from "@/lib/payway";
+import { ABA_PAYWAY_ENABLED } from "@/lib/aba";
 
 export async function POST(req: NextRequest) {
+  // Automatic ABA PayWay is paused. The manual ABA/KHQR proof flow is used
+  // instead (see /api/payment/proof). Flip ABA_PAYWAY_ENABLED=true to re-enable.
+  if (!ABA_PAYWAY_ENABLED) {
+    return NextResponse.json(
+      { error: "Automatic ABA PayWay is currently disabled. Please use manual ABA transfer.", disabled: true },
+      { status: 503 }
+    );
+  }
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

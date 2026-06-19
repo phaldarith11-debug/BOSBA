@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma, type PaymentMethod } from "@prisma/client";
+import { Prisma, type PaymentMethod, type OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getMobileUserId } from "@/lib/mobile-auth";
 
@@ -74,6 +74,10 @@ export async function POST(req: NextRequest) {
   const totalUsd = subtotalUsd + deliveryFeeUsd;
   const orderNumber = `BS${Date.now()}`;
 
+  // COD → straight to fulfilment; every other method waits for payment + proof.
+  const initialStatus: OrderStatus =
+    paymentMethod === "COD" ? "PROCESSING" : "PENDING_PAYMENT";
+
   // Nested relation writes require the *checked* Prisma input, so foreign keys are
   // expressed as `connect`/`create` relations — not scalar `userId`/`deliveryZoneId`.
   const addressCreate: Prisma.AddressCreateWithoutOrdersInput | undefined = address
@@ -97,6 +101,7 @@ export async function POST(req: NextRequest) {
       orderNumber,
       user: { connect: { id: userId } },
       paymentMethod: paymentMethod as PaymentMethod,
+      status: initialStatus,
       subtotalUsd,
       subtotalKhr: Math.round(subtotalUsd * exchangeRate),
       deliveryFeeUsd,

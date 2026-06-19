@@ -22,11 +22,17 @@ export const FONT_SIZE = {
 } as const;
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
+  PENDING_PAYMENT:   "Awaiting Payment",
+  PAYMENT_SUBMITTED: "Payment Under Review",
+  PAID:              "Paid",
+  PAYMENT_REJECTED:  "Payment Rejected",
   PENDING:    "Pending",
   CONFIRMED:  "Confirmed",
   PROCESSING: "Processing",
+  DELIVERING: "Delivering",
   SHIPPED:    "Shipped",
   DELIVERED:  "Delivered",
+  COMPLETED:  "Completed",
   CANCELLED:  "Cancelled",
   REFUNDED:   "Refunded",
 };

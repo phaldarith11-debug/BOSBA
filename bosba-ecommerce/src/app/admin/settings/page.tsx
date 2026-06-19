@@ -61,6 +61,15 @@ const SECTIONS: SettingSection[] = [
     ],
   },
   {
+    title: "Manual ABA / KHQR Payment",
+    fields: [
+      { key: "aba_account_name",         label: "ABA Account Name",        description: "Name on your ABA account, shown to customers at checkout.", placeholder: "BOSBA SHOP CO LTD" },
+      { key: "aba_account_number",       label: "ABA Account Number",      description: "Account number customers transfer to.", placeholder: "000 123 456" },
+      { key: "aba_khqr_image",           label: "KHQR Image URL",          description: "Full URL of your KHQR code image (upload to Cloudinary, then paste the link). Shown for customers to scan.", placeholder: "https://res.cloudinary.com/..." },
+      { key: "aba_payment_instructions", label: "Payment Instructions",    description: "Extra guidance shown under the account details (optional).", placeholder: "Transfer the exact amount and include your order number as the reference." },
+    ],
+  },
+  {
     title: "Social & Contact Links",
     fields: [
       { key: "social_facebook",  label: "Facebook URL",   description: "Full Facebook page URL.", placeholder: "https://facebook.com/bosba" },

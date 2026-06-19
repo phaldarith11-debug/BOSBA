@@ -52,11 +52,9 @@ const CAMBODIA_PROVINCES = [
 ];
 
 const PAYMENT_METHODS = [
-  { value: "ABA_BANK",    label: "ABA Bank (PayWay QR)", icon: "🏦" },
-  { value: "ACLEDA_BANK", label: "ACLEDA Bank",          icon: "🏦" },
-  { value: "WING_MONEY",  label: "Wing Money",           icon: "💸" },
-  { value: "COD",         label: "Cash on Delivery",     icon: "📦" },
-  { value: "PI_PAY",      label: "Pi Pay",               icon: "📱" },
+  { value: "ABA_BANK",    label: "ABA Bank Transfer / KHQR", icon: "🏦" },
+  { value: "WING_MONEY",  label: "Wing Money",               icon: "💸" },
+  { value: "COD",         label: "Cash on Delivery",         icon: "📦" },
 ];
 
 // ─── Province / zone matching ─────────────────────────────────────────────────
@@ -230,8 +228,8 @@ export default function CheckoutPage() {
       toast.success(t("success"));
       router.push(`/payment/${order.id}`);
     } else {
-      const data = await res.json();
-      toast.error(data.error ?? t("error"));
+      const data = await res.json().catch(() => null);
+      toast.error(data?.error ?? t("error"));
     }
   }
 

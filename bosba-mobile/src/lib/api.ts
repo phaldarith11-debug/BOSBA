@@ -236,3 +236,39 @@ export function updateProfile(body: unknown, token: string) {
     headers: authHeader(token),
   });
 }
+
+// ── Manual ABA / KHQR payment proof ─────────────────────────────────────────────
+// Sends multipart/form-data (screenshot + reference). We can't use apiFetch here
+// because it forces a JSON Content-Type; for multipart we must let React Native
+// set the multipart boundary itself, so Content-Type is intentionally omitted.
+export async function submitPaymentProof(
+  params: { orderId: string; refId?: string; imageUri?: string },
+  token: string
+): Promise<{ success: boolean; status: string; proofUrl: string | null }> {
+  const fd = new FormData();
+  fd.append("orderId", params.orderId);
+  if (params.refId) fd.append("refId", params.refId);
+  if (params.imageUri) {
+    const name = params.imageUri.split("/").pop() || "proof.jpg";
+    const ext = name.split(".").pop()?.toLowerCase();
+    const type = ext === "png" ? "image/png" : "image/jpeg";
+    // React Native's FormData accepts a {uri,name,type} file object.
+    fd.append("file", { uri: params.imageUri, name, type } as unknown as Blob);
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const res = await fetch(`${API_BASE}/api/mobile/payment/proof`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error ?? "Failed to submit payment proof");
+    return data;
+  } finally {
+    clearTimeout(timer);
+  }
+}

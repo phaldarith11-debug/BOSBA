@@ -21,6 +21,13 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   REFUNDED
+  // ── Manual ABA / KHQR payment lifecycle ──────────────────────────────────
+  PENDING_PAYMENT   // order placed, awaiting customer transfer + proof
+  PAYMENT_SUBMITTED // customer uploaded screenshot / reference, awaiting admin review
+  PAID              // admin approved the manual payment
+  PAYMENT_REJECTED  // admin rejected the proof; customer may resubmit
+  DELIVERING        // out for delivery
+  COMPLETED         // delivered & finished
 }
 
 enum PaymentMethod {
@@ -238,6 +245,13 @@ model Order {
 
   notes          String?
   trackingCode   String?
+
+  // ── Manual ABA / KHQR payment proof ──────────────────────────────────────
+  paymentProofUrl     String?   // Cloudinary URL of the customer's transfer screenshot
+  paymentRefId        String?   // bank/KHQR transaction reference entered by customer
+  paymentSubmittedAt  DateTime? // when the customer submitted proof
+  paymentReviewedAt   DateTime? // when an admin approved/rejected
+  paymentRejectReason String?   // reason shown to customer if rejected
 
   items          OrderItem[]
   paymentTxns    PaymentTransaction[]
