@@ -76,7 +76,15 @@
       "Bash(npx expo *)",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(JSON.stringify\\({name:j.name,slug:j.slug,version:j.version,scheme:j.scheme,newArchEnabled:j.newArchEnabled,ios:j.ios,plugins:j.plugins?.map\\(p=>Array.isArray\\(p\\)?p[0]:p\\)},null,2\\)\\);}\\)\")",
       "Bash(npx --yes expo-doctor@latest)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "mcp__claude_ai_Supabase__restore_project",
+      "mcp__claude_ai_Supabase__list_tables",
+      "Bash(git rm *)",
+      "Bash(git check-ignore *)",
+      "Bash(git commit *)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx -y expo-doctor@latest)",
+      "Bash(echo \"---EXPORT EXIT: $?---\")"
     ]
   }
 }
