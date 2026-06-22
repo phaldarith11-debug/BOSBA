@@ -90,7 +90,12 @@ export async function generateMetadata({
   const locale = params.locale as Locale;
   const meta = LOCALE_META[locale] ?? LOCALE_META.en;
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "https://bosba.com";
+  // Canonical/OG base URL. Prefer explicit env, then Vercel's injected host, so
+  // SEO tags point at the live domain even if NEXTAUTH_URL hasn't been set yet.
+  const baseUrl =
+    process.env.NEXTAUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://bosbadrinksnack.vercel.app");
   const pwa = await getPwaSettings();
 
   return {
