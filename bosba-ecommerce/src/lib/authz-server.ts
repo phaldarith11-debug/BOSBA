@@ -8,7 +8,16 @@ import { canAccessArea, type DashboardArea } from "@/lib/authz";
  * existing admin API routes (e.g. api/admin/settings/route.ts).
  */
 export async function requireArea(area: DashboardArea) {
-  const session = await getServerSession(authOptions);
+  // getServerSession can throw (e.g. missing NEXTAUTH_SECRET, JWT decode error).
+  // Treat any failure as "not authorized" so the route degrades to the login
+  // bounce instead of a server-side crash.
+  let session;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (err) {
+    console.error("[authz] getServerSession failed:", err);
+    return null;
+  }
   const role = (session?.user as { role?: string } | undefined)?.role;
   if (!session?.user || !canAccessArea(role, area)) return null;
   return session;
@@ -16,6 +25,11 @@ export async function requireArea(area: DashboardArea) {
 
 /** Convenience: the current user's role (or undefined). */
 export async function getSessionRole(): Promise<string | undefined> {
-  const session = await getServerSession(authOptions);
-  return (session?.user as { role?: string } | undefined)?.role;
+  try {
+    const session = await getServerSession(authOptions);
+    return (session?.user as { role?: string } | undefined)?.role;
+  } catch (err) {
+    console.error("[authz] getServerSession failed:", err);
+    return undefined;
+  }
 }

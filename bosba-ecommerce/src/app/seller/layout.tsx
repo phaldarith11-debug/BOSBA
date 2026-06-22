@@ -5,6 +5,9 @@ import { requireArea } from "@/lib/authz-server";
 import { Providers } from "../providers";
 import "../globals.css";
 
+// Auth-gated + per-request session → always dynamic (never statically prerendered).
+export const dynamic = "force-dynamic";
+
 const SELLER_BRAND = {
   accent: "emerald" as const,
   brandLabel: "BOSBA Seller",

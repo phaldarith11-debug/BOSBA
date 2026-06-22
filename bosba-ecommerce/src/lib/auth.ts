@@ -8,6 +8,17 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
+// Fail loud in the server logs (not the user's screen) when the critical auth
+// env vars are missing — this is the usual cause of dashboard 500s on a fresh
+// deployment. Visible in `vercel logs`.
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error(
+    "[auth] NEXTAUTH_SECRET is not set. getServerSession() will throw and all " +
+      "dashboard routes (/admin, /seller, /developer) will 500. Set NEXTAUTH_SECRET " +
+      "(and NEXTAUTH_URL) in the Vercel project environment variables."
+  );
+}
+
 const oauthProviders = [];
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -60,6 +71,9 @@ if (process.env.APPLE_ID && process.env.APPLE_SECRET) {
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
+  // Explicit so the config doesn't silently depend on NextAuth's env auto-pickup.
+  // (Host/callback URLs come from NEXTAUTH_URL — set it to the live domain.)
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
