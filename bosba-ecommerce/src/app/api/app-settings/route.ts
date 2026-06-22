@@ -19,6 +19,12 @@ const PUBLIC_KEYS = [
   "homepage_hero_subtitle_km",
   "usd_khr_rate",
   "free_delivery_over_usd",
+  // Shared design + launch behaviour so the Expo app matches the PWA.
+  "font_family",
+  "radius_scale",
+  "splash_tagline",
+  "pwa_splash_enabled",
+  "onboarding_enabled",
   // Manual ABA / KHQR receiving details (public merchant info, never the API key)
   "aba_account_name",
   "aba_account_number",

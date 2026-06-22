@@ -27,7 +27,9 @@ export async function middleware(request: NextRequest) {
     const loginPath = AREA_LOGIN_PATHS[area];
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const role = (token as { role?: string } | null)?.role;
-    const allowed = canAccessArea(role, area);
+    const active = (token as { active?: boolean } | null)?.active;
+    // A deactivated account loses dashboard access even on an existing session.
+    const allowed = canAccessArea(role, area) && active !== false;
 
     // The login page itself is public; bounce already-authorized users in.
     if (pathname === loginPath) {

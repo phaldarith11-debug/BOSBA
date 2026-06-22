@@ -1,7 +1,6 @@
 import { Toaster } from "react-hot-toast";
-import { DashboardSidebar, MobileDashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { AreaSidebar, MobileAreaSidebar } from "@/components/dashboard/AreaSidebar";
 import { DashboardTopBar } from "@/components/dashboard/DashboardTopBar";
-import { DEVELOPER_NAV_GROUPS } from "@/components/dashboard/navConfig";
 import { requireArea } from "@/lib/authz-server";
 import { Providers } from "../providers";
 import "../globals.css";
@@ -38,9 +37,9 @@ export default async function DeveloperLayout({ children }: { children: React.Re
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
           <div className="min-h-screen bg-gray-50 flex">
             <div className="hidden md:flex">
-              <DashboardSidebar {...DEVELOPER_BRAND} groups={DEVELOPER_NAV_GROUPS} />
+              <AreaSidebar area="developer" {...DEVELOPER_BRAND} />
             </div>
-            <MobileDashboardSidebar {...DEVELOPER_BRAND} groups={DEVELOPER_NAV_GROUPS} />
+            <MobileAreaSidebar area="developer" {...DEVELOPER_BRAND} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               <DashboardTopBar signOutCallbackUrl="/developer/login" fallbackName="Developer" />

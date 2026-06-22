@@ -1,8 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/products/ProductCard";
+import { CmsSections } from "@/components/cms/CmsSections";
 import { ArrowRight, Truck, Shield, Headphones, RotateCcw } from "lucide-react";
 import type { ProductWithCategory } from "@/types";
 
@@ -33,6 +34,7 @@ const TRUST_ITEMS = [
 
 export default async function HomePage() {
   const t = await getTranslations("home");
+  const locale = await getLocale();
   const [featured, categories] = await Promise.all([
     getFeaturedProducts(),
     getCategories(),
@@ -40,8 +42,13 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* ── No-code CMS blocks (published in the Developer Homepage Builder) ──
+          Renders nothing until a block is published, so the default homepage
+          below is unchanged. */}
+      <CmsSections page="home" locale={locale} />
+
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-hero-gradient min-h-[480px] flex items-center">
+      <section className="relative overflow-hidden bg-hero-gradient min-h-[360px] sm:min-h-[440px] md:min-h-[480px] flex items-center">
         {/* Dot-grid overlay */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg width="100%" height="100%">
@@ -58,31 +65,31 @@ export default async function HomePage() {
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-red-400/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 grid md:grid-cols-2 gap-10 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
           {/* Text */}
           <div className="animate-fade-up">
-            <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-white/20 mb-5">
+            <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 text-[11px] sm:text-xs font-semibold px-3 py-1.5 rounded-full border border-white/20 mb-4 sm:mb-5">
               🇰🇭 {t("hero.badge")}
             </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-5 text-white text-balance">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-3 sm:mb-5 text-white text-balance">
               {t("hero.title")}
               <br />
               <span className="text-yellow-300">{t("hero.highlight")}</span>
             </h1>
-            <p className="text-red-100/90 mb-8 text-lg max-w-md leading-relaxed">
+            <p className="text-red-100/90 mb-6 sm:mb-8 text-base sm:text-lg max-w-md leading-relaxed">
               {t("hero.subtitle")}
             </p>
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2.5 sm:gap-3 flex-wrap">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 bg-white text-red-700 font-bold px-7 py-3.5 rounded-full hover:bg-yellow-50 active:scale-95 transition-all shadow-lg"
+                className="inline-flex items-center gap-2 bg-white text-red-700 font-bold px-6 sm:px-7 py-3 sm:py-3.5 rounded-full hover:bg-yellow-50 active:scale-95 transition-all shadow-lg"
               >
                 {t("hero.cta")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/products?featured=true"
-                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white font-semibold px-6 py-3.5 rounded-full border border-white/25 hover:bg-white/20 active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white font-semibold px-5 sm:px-6 py-3 sm:py-3.5 rounded-full border border-white/25 hover:bg-white/20 active:scale-95 transition-all"
               >
                 {t("featured.viewAll")}
               </Link>
@@ -179,7 +186,7 @@ export default async function HomePage() {
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {featured.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

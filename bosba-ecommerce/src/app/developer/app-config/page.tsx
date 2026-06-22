@@ -1,16 +1,15 @@
-import { ComingSoon } from "@/components/dashboard/ComingSoon";
+import { SettingsForm } from "@/components/dashboard/SettingsForm";
 
 export default function DeveloperAppConfigPage() {
   return (
-    <ComingSoon
-      title="App Config"
-      description="App-wide runtime configuration delivered to the website and mobile app."
-      features={[
-        "Single config consumed by both surfaces",
-        "Versioned and cache-aware delivery",
-        "Builds on the existing /api/app-settings pipe",
-      ]}
-      milestone="Milestone 3"
-    />
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">App Settings</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Homepage hero text and announcement bar content. Consumed by both the website and the mobile app.
+        </p>
+      </div>
+      <SettingsForm groupId="app" />
+    </div>
   );
 }

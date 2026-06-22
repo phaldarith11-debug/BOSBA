@@ -186,6 +186,20 @@ export function getBanners(position = "hero") {
   return apiFetch(`/api/app-settings/banners?position=${position}`);
 }
 
+// ── No-code CMS layout blocks ─────────────────────────────────────────────────
+// Published, visible homepage blocks controlled from the Developer "Homepage
+// Builder". Same feed the website reads, filtered to the mobile surface so a
+// single dashboard edit updates both. Returns { page, device, sections }.
+export function getCmsSections(device: "web" | "mobile" = "mobile", page = "home") {
+  return apiFetch(`/api/cms/sections?page=${encodeURIComponent(page)}&device=${device}`);
+}
+
+// Published navigation links for a location (default the mobile quick-links menu).
+// Same feed the website header/footer read. Returns { location, device, items }.
+export function getMenu(location = "mobile_tabs", device: "web" | "mobile" = "mobile") {
+  return apiFetch(`/api/cms/menus?location=${encodeURIComponent(location)}&device=${device}`);
+}
+
 // ── Delivery zones ────────────────────────────────────────────────────────────
 
 export function getDeliveryZones() {

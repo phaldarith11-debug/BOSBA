@@ -1,33 +1,67 @@
 import Link from "next/link";
 import {
   Sliders, FlaskConical, KeyRound, Plug, Palette, LayoutTemplate,
-  Wrench, ScrollText, ArrowRight,
+  Wrench, ScrollText, Blocks, ListTree, ArrowRight,
 } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getSettingsMap } from "@/lib/dev-settings";
+
+export const dynamic = "force-dynamic";
 
 const CARDS = [
-  { href: "/developer/system", icon: Sliders, label: "System Settings", desc: "Core platform configuration" },
-  { href: "/developer/feature-flags", icon: FlaskConical, label: "Feature Flags", desc: "Toggle features on web + mobile" },
-  { href: "/developer/api", icon: KeyRound, label: "API Settings", desc: "Keys, webhooks, integrations" },
-  { href: "/developer/app-config", icon: Plug, label: "App Config", desc: "App-wide runtime configuration" },
-  { href: "/developer/themes", icon: Palette, label: "Themes", desc: "Brand colors, fonts, tokens" },
-  { href: "/developer/layout", icon: LayoutTemplate, label: "Layout", desc: "Sections, menus, navigation" },
-  { href: "/developer/maintenance", icon: Wrench, label: "Maintenance", desc: "Maintenance mode and cache" },
-  { href: "/developer/logs", icon: ScrollText, label: "Logs & Errors", desc: "Audit trail and error logs" },
+  { href: "/developer/system", icon: Sliders, label: "Site Settings", desc: "Core platform configuration" },
+  { href: "/developer/themes", icon: Palette, label: "Theme & Branding", desc: "Colors, fonts, logo, radius" },
+  { href: "/developer/app-config", icon: Plug, label: "App Settings", desc: "Hero & announcement content" },
+  { href: "/developer/homepage", icon: Blocks, label: "Homepage Builder", desc: "Sections for web + mobile" },
+  { href: "/developer/menus", icon: ListTree, label: "Menu Builder", desc: "Header, footer, tab navigation" },
+  { href: "/developer/feature-flags", icon: FlaskConical, label: "Feature Flags", desc: "Toggle features without deploy" },
+  { href: "/developer/maintenance", icon: Wrench, label: "Maintenance", desc: "Take the storefront offline" },
+  { href: "/developer/api", icon: KeyRound, label: "API Status", desc: "Integration configuration" },
+  { href: "/developer/layout", icon: LayoutTemplate, label: "Layout", desc: "No-code layout tools" },
+  { href: "/developer/logs", icon: ScrollText, label: "Logs & Errors", desc: "System + audit trail" },
 ];
 
-export default function DeveloperDashboardPage() {
+async function getStatus() {
+  try {
+    const [flags, sections, map] = await Promise.all([
+      prisma.featureFlag.count(),
+      prisma.pageSection.count(),
+      getSettingsMap(),
+    ]);
+    return { flags, sections, maintenance: map.maintenance_mode === "true" };
+  } catch {
+    return { flags: 0, sections: 0, maintenance: false };
+  }
+}
+
+export default async function DeveloperDashboardPage() {
+  const status = await getStatus();
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Developer Console</h1>
         <p className="text-sm text-gray-500 mt-1">
-          System configuration, feature flags, theming, and platform tools. Deep features arrive in later milestones.
+          Control the website and mobile UI from the database — settings, theming, layout, and feature flags. No source edits required.
         </p>
       </div>
 
-      <div className="rounded-2xl bg-indigo-50 border border-indigo-100 p-4 text-sm text-indigo-800">
-        The platform console is scaffolded. Logs already read from the live audit trail; the
-        remaining tools become functional as the settings, theme, and layout systems land.
+      {/* Live status */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p className="text-2xl font-bold text-gray-900">{status.sections}</p>
+          <p className="text-xs text-gray-500">CMS sections</p>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p className="text-2xl font-bold text-gray-900">{status.flags}</p>
+          <p className="text-xs text-gray-500">Feature flags</p>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+          <p className={`text-sm font-bold mt-1 ${status.maintenance ? "text-amber-600" : "text-green-600"}`}>
+            {status.maintenance ? "● Maintenance ON" : "● Live"}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">Storefront status</p>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">

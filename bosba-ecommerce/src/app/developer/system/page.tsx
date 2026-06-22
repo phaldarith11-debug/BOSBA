@@ -1,16 +1,15 @@
-import { ComingSoon } from "@/components/dashboard/ComingSoon";
+import { SettingsForm } from "@/components/dashboard/SettingsForm";
 
 export default function DeveloperSystemPage() {
   return (
-    <ComingSoon
-      title="System Settings"
-      description="Core platform configuration managed from the database."
-      features={[
-        "Typed, validated system configuration",
-        "Separate developer-only vs admin-editable settings",
-        "Environment and runtime info",
-      ]}
-      milestone="Milestone 3"
-    />
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Site Settings</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Core identity and contact info. These values are read by the website and the mobile app from the database.
+        </p>
+      </div>
+      <SettingsForm groupId="system" />
+    </div>
   );
 }

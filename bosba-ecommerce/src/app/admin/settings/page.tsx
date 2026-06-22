@@ -13,6 +13,9 @@ async function saveSettings(formData: FormData) {
   }
   revalidatePath("/admin/settings");
   revalidatePath("/api/app-settings");
+  // Refresh brand/PWA-derived metadata (theme-color, manifest link, icons)
+  // across the public site after a settings change.
+  revalidatePath("/", "layout");
 }
 
 type SettingField = {
@@ -36,6 +39,17 @@ const SECTIONS: SettingSection[] = [
       { key: "brand_logo",       label: "Logo URL",          description: "Full URL to your logo image (Cloudinary or external).", placeholder: "https://res.cloudinary.com/..." },
       { key: "primary_color",    label: "Primary Color",     description: "Main brand color used for buttons and accents.", placeholder: "#e51b1b", type: "color" },
       { key: "secondary_color",  label: "Secondary Color",   description: "Used for dark sections and text.", placeholder: "#0f172a", type: "color" },
+    ],
+  },
+  {
+    title: "PWA / Installable App",
+    fields: [
+      { key: "pwa_app_name",         label: "App Name",         description: "Full name shown under the home-screen icon when installed.", placeholder: "BOSBA" },
+      { key: "pwa_short_name",       label: "Short Name",       description: "Compact name for small spaces (keep it short).", placeholder: "BOSBA" },
+      { key: "pwa_theme_color",      label: "Theme Color",      description: "Browser/OS chrome color for the installed app.", placeholder: "#e51b1b", type: "color" },
+      { key: "pwa_background_color", label: "Splash Background", description: "Splash screen background while the app loads.", placeholder: "#ffffff", type: "color" },
+      { key: "pwa_icon_192",         label: "App Icon 192px URL", description: "Optional override (PNG, 192x192). Leave blank to use the bundled BOSBA icon.", placeholder: "https://res.cloudinary.com/..." },
+      { key: "pwa_icon_512",         label: "App Icon 512px URL", description: "Optional override (PNG, 512x512). Leave blank to use the bundled BOSBA icon.", placeholder: "https://res.cloudinary.com/..." },
     ],
   },
   {

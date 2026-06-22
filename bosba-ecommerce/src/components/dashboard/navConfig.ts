@@ -3,7 +3,7 @@ import {
   BarChart3, Settings, Image, Layers, Star, FileText, Search,
   Activity, Megaphone, UserCog, Bell, Banknote, Store, Wallet,
   Boxes, UserCircle, FlaskConical, KeyRound, Palette, LayoutTemplate,
-  Wrench, ScrollText, Sliders, Plug,
+  Wrench, ScrollText, Sliders, Plug, Blocks, ListTree,
 } from "lucide-react";
 import type { NavGroup } from "./DashboardSidebar";
 
@@ -109,6 +109,8 @@ export const DEVELOPER_NAV_GROUPS: NavGroup[] = [
   {
     label: "Appearance",
     items: [
+      { href: "/developer/homepage", icon: Blocks, label: "Homepage Builder" },
+      { href: "/developer/menus", icon: ListTree, label: "Menu Builder" },
       { href: "/developer/themes", icon: Palette, label: "Themes" },
       { href: "/developer/layout", icon: LayoutTemplate, label: "Layout" },
     ],
