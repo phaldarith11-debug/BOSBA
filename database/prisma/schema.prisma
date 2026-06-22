@@ -8,9 +8,14 @@ datasource db {
 
 enum Role {
   CUSTOMER
+  SELLER
   EDITOR
   MANAGER
   ADMIN
+  DEVELOPER
+  OWNER
+  STAFF
+  VIEWER
 }
 
 enum OrderStatus {
@@ -21,6 +26,13 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   REFUNDED
+  // ── Manual ABA / KHQR payment lifecycle ──────────────────────────────────
+  PENDING_PAYMENT   // order placed, awaiting customer transfer + proof
+  PAYMENT_SUBMITTED // customer uploaded screenshot / reference, awaiting admin review
+  PAID              // admin approved the manual payment
+  PAYMENT_REJECTED  // admin rejected the proof; customer may resubmit
+  DELIVERING        // out for delivery
+  COMPLETED         // delivered & finished
 }
 
 enum PaymentMethod {
@@ -46,6 +58,7 @@ model User {
   nameKm        String?
   phone         String?
   role            Role      @default(CUSTOMER)
+  active          Boolean   @default(true)
   emailVerified   DateTime?
   image           String?
   telegramChatId  String?   @unique
@@ -59,6 +72,11 @@ model User {
   addresses     Address[]
   reviews       Review[]
   notifications Notification[]
+
+  // Marketplace seller relations
+  products      Product[]      @relation("SellerProducts")
+  sellerProfile SellerProfile?
+  payouts       Payout[]
 }
 
 model Account {
@@ -130,6 +148,12 @@ model Product {
   weight        Float?
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id])
+  // Marketplace ownership. NULL = platform/admin-owned (managed in Admin).
+  // A non-null sellerId means a SELLER owns this product and only they (plus
+  // ADMIN/OWNER) can see/edit it in their Seller Center.
+  sellerId      String?
+  seller        User?    @relation("SellerProducts", fields: [sellerId], references: [id])
+  status        String   @default("PUBLISHED") // DRAFT | PENDING | PUBLISHED | REJECTED
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -137,6 +161,8 @@ model Product {
   wishlistItems WishlistItem[]
   variants      ProductVariant[]
   reviews       Review[]
+
+  @@index([sellerId])
 }
 
 model ProductVariant {
@@ -238,6 +264,13 @@ model Order {
 
   notes          String?
   trackingCode   String?
+
+  // ── Manual ABA / KHQR payment proof ──────────────────────────────────────
+  paymentProofUrl     String?   // Cloudinary URL of the customer's transfer screenshot
+  paymentRefId        String?   // bank/KHQR transaction reference entered by customer
+  paymentSubmittedAt  DateTime? // when the customer submitted proof
+  paymentReviewedAt   DateTime? // when an admin approved/rejected
+  paymentRejectReason String?   // reason shown to customer if rejected
 
   items          OrderItem[]
   paymentTxns    PaymentTransaction[]
@@ -412,4 +445,131 @@ model StaffInvite {
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())
+}
+
+// ── No-code CMS: structured layout blocks ──────────────────────────────────
+// A PageSection is one block on a CMS-controlled page (currently "home"). The
+// Developer "Homepage Builder" creates/edits these; the website and mobile app
+// both read the PUBLISHED + visible ones via /api/cms/sections. There is NO raw
+// HTML/code field — every block is a fixed, validated type, so editors can
+// never inject unsafe markup. Draft vs published gives a safe preview workflow.
+model PageSection {
+  id         String   @id @default(cuid())
+  page       String   @default("home")     // which CMS page this block belongs to
+  type       String                         // hero | promo_banner | text | image | category_grid | product_carousel | faq | testimonials
+  titleEn    String?
+  titleKm    String?
+  subtitleEn String?  @db.Text
+  subtitleKm String?  @db.Text
+  image      String?                        // image / banner URL (Cloudinary)
+  buttonText String?
+  buttonLink String?                        // validated: internal "/..." or http(s) only
+  bgColor    String?                        // validated CSS color (hex/rgb/hsl)
+  textColor  String?                        // validated CSS color
+  config     Json?                          // type-specific extras (e.g. items list)
+  device     String   @default("both")      // web | mobile | both
+  visible    Boolean  @default(true)
+  status     String   @default("draft")     // draft | published
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([page, status, device])
+  @@index([page, sortOrder])
+}
+
+// ── No-code CMS: navigation menus ──────────────────────────────────────────
+// A Menu is one navigation location (header / footer / mobile_tabs); its items
+// are managed in the Developer "Menu Builder". The website and mobile app read
+// the PUBLISHED + visible items via /api/cms/menus, so a single edit updates
+// both. URLs are validated (internal "/..." or http(s) only) — no code/HTML.
+model Menu {
+  id        String     @id @default(cuid())
+  location  String     @unique     // header | footer | mobile_tabs
+  titleEn   String?
+  titleKm   String?
+  items     MenuItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model MenuItem {
+  id        String   @id @default(cuid())
+  menuId    String
+  menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  labelEn   String
+  labelKm   String?
+  url       String                  // validated internal "/..." or http(s) link
+  icon      String?                 // optional lucide icon name (mobile / tab bars)
+  device    String   @default("both")   // web | mobile | both
+  visible   Boolean  @default(true)
+  status    String   @default("draft")  // draft | published
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId, status, device])
+  @@index([menuId, sortOrder])
+}
+
+// ── Marketplace: per-seller business profile & payout settings ──────────────
+model SellerProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName     String?
+  storeNameKm   String?
+  bio           String?  @db.Text
+  logo          String?
+  phone         String?
+  // Payout / settlement details (manual ABA/bank settlement for now)
+  payoutMethod  String?  // aba | bank | cash
+  payoutAccount String?  // account number / phone, free text
+  payoutName    String?  // account holder name
+  commissionPct Decimal  @default(10) @db.Decimal(5, 2) // platform commission %
+  approved      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ── Marketplace: payout records to sellers ──────────────────────────────────
+model Payout {
+  id          String   @id @default(cuid())
+  sellerId    String
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  amountUsd   Decimal  @db.Decimal(10, 2)
+  amountKhr   Int      @default(0)
+  status      String   @default("PENDING") // PENDING | PAID | CANCELLED
+  periodStart DateTime?
+  periodEnd   DateTime?
+  reference   String?  // bank/ABA transfer reference
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sellerId, status])
+}
+
+// ── Developer CMS: feature flags (controls web + mobile behaviour) ──────────
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique  // e.g. "checkout.aba_auto", "mobile.push"
+  enabled     Boolean  @default(false)
+  description String?
+  rollout     Int      @default(100) // 0-100 percentage (future use)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+// ── Developer CMS: structured system log / event viewer ─────────────────────
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   @default("info") // info | warn | error
+  source    String?  // api route, job name, etc.
+  message   String   @db.Text
+  context   Json?
+  createdAt DateTime @default(now())
+
+  @@index([level, createdAt])
+  @@index([createdAt])
 }

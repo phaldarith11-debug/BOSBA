@@ -1,30 +1,39 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { ProductCard } from "./ProductCard";
+import { SkeletonGrid } from "@/components/ui/SkeletonCard";
 import type { ProductWithCategory } from "@/types";
 
 interface Props {
   products: ProductWithCategory[];
   loading?: boolean;
+  /** When set, renders a friendly error state with an optional retry button. */
+  error?: boolean;
+  onRetry?: () => void;
 }
 
-export function ProductGrid({ products, loading }: Props) {
+// 2 columns on every phone width (was 1 column under 400px), then 3/4 up.
+const GRID_CLASS = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4";
+
+export function ProductGrid({ products, loading, error, onRetry }: Props) {
   const t = useTranslations("products");
 
-  if (loading) {
+  if (loading) return <SkeletonGrid count={8} />;
+
+  if (error) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl overflow-hidden animate-pulse">
-            <div className="aspect-square bg-gray-200" />
-            <div className="p-3 space-y-2">
-              <div className="h-3 bg-gray-200 rounded w-1/2" />
-              <div className="h-4 bg-gray-200 rounded" />
-              <div className="h-3 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-            </div>
-          </div>
-        ))}
+      <div className="text-center py-20 text-gray-400">
+        <p className="text-5xl mb-4">⚠️</p>
+        <p className="text-lg font-medium text-gray-600">{t("error.title")}</p>
+        <p className="text-sm">{t("error.hint")}</p>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="mt-4 inline-flex items-center gap-2 bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-red-700 active:scale-95 transition-all"
+          >
+            {t("error.retry")}
+          </button>
+        )}
       </div>
     );
   }
@@ -40,7 +49,7 @@ export function ProductGrid({ products, loading }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className={GRID_CLASS}>
       {products.map((p) => <ProductCard key={p.id} product={p} />)}
     </div>
   );

@@ -2,7 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ABA_PAYWAY_ENABLED, getAbaManualSettings } from "@/lib/aba";
 import { PaymentPageClient } from "./PaymentPageClient";
+import { ManualAbaPayment } from "./ManualAbaPayment";
 
 export default async function PaymentPage({
   params,
@@ -28,6 +30,28 @@ export default async function PaymentPage({
     redirect(`${localePrefix}/orders/${order.id}`);
   }
 
+  // ── Manual ABA / KHQR flow (active while automatic PayWay is paused) ──────────
+  const isABA = order.paymentMethod === "ABA_BANK";
+  if (isABA && !ABA_PAYWAY_ENABLED) {
+    const aba = await getAbaManualSettings();
+    return (
+      <ManualAbaPayment
+        order={{
+          id: order.id,
+          orderNumber: order.orderNumber,
+          totalUsd: Number(order.totalUsd),
+          totalKhr: order.totalKhr,
+          status: order.status,
+          paymentRefId: order.paymentRefId,
+          paymentProofUrl: order.paymentProofUrl,
+          paymentRejectReason: order.paymentRejectReason,
+        }}
+        aba={aba}
+      />
+    );
+  }
+
+  // ── Automatic flow (PayWay QR / Wing / COD) ──────────────────────────────────
   const [wingSetting, wingName] = await Promise.all([
     prisma.settings.findUnique({ where: { key: "wing_account" } }),
     prisma.settings.findUnique({ where: { key: "wing_account_name" } }),

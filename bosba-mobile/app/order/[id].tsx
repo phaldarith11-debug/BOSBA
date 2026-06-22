@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
+import {
+  View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity,
+  TextInput, Image, Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../../src/context/auth";
-import { getOrder } from "../../src/lib/api";
+import { getOrder, getAppSettings, submitPaymentProof } from "../../src/lib/api";
 import { COLORS, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from "../../src/constants";
 
 type OrderItem = { nameEn: string; quantity: number; priceUsd: number; totalUsd: number; imageUrl?: string | null };
@@ -14,10 +18,14 @@ type Order = {
   paymentStatus: string;
   paymentMethod: string;
   totalUsd: number;
+  totalKhr?: number;
   subtotalUsd: number;
   deliveryFeeUsd: number;
   trackingCode?: string | null;
   notes?: string | null;
+  paymentRefId?: string | null;
+  paymentProofUrl?: string | null;
+  paymentRejectReason?: string | null;
   createdAt: string;
   items: OrderItem[];
   address?: {
@@ -31,6 +39,13 @@ type Order = {
   } | null;
 };
 
+type AbaSettings = {
+  aba_account_name?: string;
+  aba_account_number?: string;
+  aba_khqr_image?: string;
+  aba_payment_instructions?: string;
+};
+
 const STATUS_STEPS = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
 
 export default function OrderDetailScreen() {
@@ -40,12 +55,17 @@ export default function OrderDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  function load() {
     if (!id || !token) return;
     getOrder(id, token)
       .then(setOrder)
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, token]);
 
   if (loading) return <View style={styles.center}><ActivityIndicator color={COLORS.primary} size="large" /></View>;
@@ -141,6 +161,11 @@ export default function OrderDetailScreen() {
           <PriceRow label="Date" value={new Date(order.createdAt).toLocaleDateString()} />
         </View>
 
+        {/* Manual ABA / KHQR payment */}
+        {order.paymentMethod === "ABA_BANK" && order.paymentStatus !== "PAID" && (
+          <AbaPaymentSection order={order} token={token} onSubmitted={load} />
+        )}
+
         {/* Delivery Address */}
         {order.address && (
           <View style={styles.card}>
@@ -188,6 +213,124 @@ function PriceRow({ label, value, bold }: { label: string; value: string; bold?:
   );
 }
 
+function AbaPaymentSection({
+  order,
+  token,
+  onSubmitted,
+}: {
+  order: Order;
+  token: string | null;
+  onSubmitted: () => void;
+}) {
+  const [aba, setAba] = useState<AbaSettings>({});
+  const [refId, setRefId] = useState(order.paymentRefId ?? "");
+  const [imageUri, setImageUri] = useState<string | null>(order.paymentProofUrl ?? null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getAppSettings().then(setAba).catch(() => {});
+  }, []);
+
+  const submitted = order.status === "PAYMENT_SUBMITTED";
+  const rejected = order.status === "PAYMENT_REJECTED";
+
+  async function pickImage() {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Permission needed", "Allow photo access to upload your payment screenshot.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 });
+    if (!result.canceled && result.assets?.[0]) setImageUri(result.assets[0].uri);
+  }
+
+  async function handleSubmit() {
+    if (!token) return;
+    if (!refId.trim() && !imageUri) {
+      Alert.alert("Add proof", "Enter the transaction reference or attach a screenshot.");
+      return;
+    }
+    // Only upload a freshly-picked local file (file://…), not an already-hosted https URL.
+    const localImage = imageUri && imageUri.startsWith("http") ? undefined : imageUri ?? undefined;
+    setSubmitting(true);
+    try {
+      await submitPaymentProof(
+        { orderId: order.id, refId: refId.trim() || undefined, imageUri: localImage },
+        token
+      );
+      Alert.alert("Submitted", "Your payment proof was submitted. We'll confirm shortly!");
+      onSubmitted();
+    } catch (e) {
+      Alert.alert("Failed", e instanceof Error ? e.message : "Could not submit payment proof.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>ABA Bank Transfer / KHQR</Text>
+
+      {submitted && (
+        <View style={styles.banner}>
+          <Text style={styles.bannerTitle}>⏳ Awaiting confirmation</Text>
+          <Text style={styles.bannerText}>We received your proof and will confirm your order shortly.</Text>
+        </View>
+      )}
+      {rejected && (
+        <View style={[styles.banner, styles.bannerError]}>
+          <Text style={styles.bannerTitle}>❌ Payment not verified</Text>
+          <Text style={styles.bannerText}>{order.paymentRejectReason || "Please re-submit your proof."}</Text>
+        </View>
+      )}
+
+      {aba.aba_khqr_image ? (
+        <View style={styles.qrWrap}>
+          <Image source={{ uri: aba.aba_khqr_image }} style={styles.qrImage} resizeMode="contain" />
+          <Text style={styles.qrHint}>Scan with ABA Mobile or any KHQR bank app</Text>
+        </View>
+      ) : null}
+
+      <PriceRow label="Account name" value={aba.aba_account_name || "—"} />
+      <PriceRow label="Account no." value={aba.aba_account_number || "—"} />
+      <PriceRow label="Amount" value={`$${Number(order.totalUsd).toFixed(2)}`} bold />
+      <PriceRow label="Reference" value={`#${order.orderNumber}`} />
+      {aba.aba_payment_instructions ? (
+        <Text style={styles.instructions}>{aba.aba_payment_instructions}</Text>
+      ) : null}
+
+      {!submitted && (
+        <>
+          <View style={styles.divider} />
+          <Text style={styles.formLabel}>Transaction reference / ID</Text>
+          <TextInput
+            style={styles.input}
+            value={refId}
+            onChangeText={setRefId}
+            placeholder="e.g. 100FT0123456789"
+            placeholderTextColor="#9ca3af"
+          />
+          <TouchableOpacity style={styles.uploadBtn} onPress={pickImage}>
+            <Text style={styles.uploadBtnText}>{imageUri ? "Change screenshot" : "📎 Upload screenshot"}</Text>
+          </TouchableOpacity>
+          {imageUri && <Image source={{ uri: imageUri }} style={styles.proofPreview} resizeMode="cover" />}
+          <TouchableOpacity
+            style={[styles.submitBtn, submitting && styles.btnDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitBtnText}>{rejected ? "Re-submit Proof" : "Submit Payment Proof"}</Text>
+            )}
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safe:              { flex: 1, backgroundColor: "#f9fafb" },
   scroll:            { padding: 16, paddingBottom: 40 },
@@ -230,4 +373,22 @@ const styles = StyleSheet.create({
   addressName:       { fontSize: 15, fontWeight: "600", color: "#111827", marginBottom: 2 },
   addressPhone:      { fontSize: 14, color: "#4b5563", marginBottom: 4 },
   addressText:       { fontSize: 14, color: "#374151", marginBottom: 1 },
+
+  // ABA manual payment section
+  banner:            { backgroundColor: "#fffbeb", borderColor: "#fde68a", borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 },
+  bannerError:       { backgroundColor: "#fef2f2", borderColor: "#fecaca" },
+  bannerTitle:       { fontSize: 14, fontWeight: "700", color: "#92400e", marginBottom: 2 },
+  bannerText:        { fontSize: 13, color: "#78350f" },
+  qrWrap:            { alignItems: "center", marginBottom: 12 },
+  qrImage:           { width: 200, height: 200, backgroundColor: "#fff", borderRadius: 12, borderWidth: 1, borderColor: "#e5e7eb" },
+  qrHint:            { fontSize: 11, color: "#9ca3af", marginTop: 6 },
+  instructions:      { fontSize: 13, color: "#4b5563", backgroundColor: "#f9fafb", borderRadius: 10, padding: 10, marginTop: 8, lineHeight: 19 },
+  formLabel:         { fontSize: 13, color: "#374151", fontWeight: "500", marginBottom: 6 },
+  input:             { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: "#111827", backgroundColor: "#fafafa", marginBottom: 10 },
+  uploadBtn:         { borderWidth: 1, borderStyle: "dashed", borderColor: "#d1d5db", borderRadius: 10, paddingVertical: 12, alignItems: "center", marginBottom: 10 },
+  uploadBtnText:     { fontSize: 14, color: "#6b7280", fontWeight: "500" },
+  proofPreview:      { width: 120, height: 120, borderRadius: 10, marginBottom: 12, borderWidth: 1, borderColor: "#e5e7eb" },
+  submitBtn:         { backgroundColor: COLORS.primary, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  submitBtnText:     { color: "#fff", fontSize: 15, fontWeight: "700" },
+  btnDisabled:       { opacity: 0.6 },
 });

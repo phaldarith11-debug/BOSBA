@@ -7,6 +7,11 @@ const FALLBACK: SiteSettings = {
   brandLogo: null,
   primaryColor: null,
   secondaryColor: null,
+  announcementEn: null,
+  announcementKm: null,
+  splashEnabled: true,
+  splashTagline: null,
+  onboardingEnabled: false,
 };
 
 const SiteSettingsContext = createContext<SiteSettings>(FALLBACK);

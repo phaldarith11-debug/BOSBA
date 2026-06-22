@@ -13,7 +13,11 @@ export function formatUsd(amount: number): string {
 }
 
 export function formatKhr(amount: number): string {
-  return new Intl.NumberFormat("km-KH", { style: "currency", currency: "KHR", maximumFractionDigits: 0 }).format(amount);
+  // Deterministic across Node (server) and browser (client): the "km-KH" currency
+  // style renders the ៛ symbol on the server but falls back to "KHR" in the
+  // browser, causing React hydration mismatches. Group with the universally
+  // available en-US locale and append the riel symbol ourselves.
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount)}៛`;
 }
 
 export function formatPrice(usd: number, currency: "USD" | "KHR", rate = DEFAULT_RATE): string {

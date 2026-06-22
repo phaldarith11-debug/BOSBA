@@ -103,11 +103,11 @@ export function ProductCard({ product }: { product: ProductWithCategory }) {
           </div>
         )}
 
-        {/* Wishlist button — slides in on hover */}
+        {/* Wishlist button — always tappable on mobile, slides in on hover (desktop) */}
         <button
           onClick={handleWishlist}
           aria-label="Toggle wishlist"
-          className="absolute top-2.5 right-2.5 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 hover:scale-110 z-10"
+          className="absolute top-2.5 right-2.5 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center opacity-100 translate-x-0 md:opacity-0 md:translate-x-2 md:group-hover:opacity-100 md:group-hover:translate-x-0 transition-all duration-200 active:scale-90 md:hover:scale-110 z-10"
         >
           <Heart
             className={`h-4 w-4 transition-colors ${
@@ -116,12 +116,12 @@ export function ProductCard({ product }: { product: ProductWithCategory }) {
           />
         </button>
 
-        {/* Quick-add bar — slides up from bottom on hover */}
+        {/* Quick-add bar — desktop only (mobile uses the in-card button below) */}
         <button
           onClick={handleAddToCart}
           disabled={product.stock === 0}
           aria-label={t("addToCart")}
-          className="absolute bottom-0 left-0 right-0 bg-gray-900/95 text-white text-xs font-semibold py-2.5 flex items-center justify-center gap-1.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 disabled:opacity-50 hover:bg-red-600"
+          className="absolute bottom-0 left-0 right-0 bg-gray-900/95 text-white text-xs font-semibold py-2.5 hidden md:flex items-center justify-center gap-1.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 disabled:opacity-50 hover:bg-red-600"
         >
           <ShoppingCart className="h-3.5 w-3.5" />
           {t("addToCart")}
@@ -149,11 +149,22 @@ export function ProductCard({ product }: { product: ProductWithCategory }) {
             {subName}
           </p>
         )}
-        <div className="flex items-center gap-2 mt-2">
-          <span className="font-bold text-red-600 text-sm">{price}</span>
-          {comparePrice && (
-            <span className="text-xs text-gray-400 line-through">{comparePrice}</span>
-          )}
+        <div className="flex items-end justify-between gap-2 mt-2">
+          <div className="min-w-0 flex items-center gap-2">
+            <span className="font-bold text-red-600 text-sm">{price}</span>
+            {comparePrice && (
+              <span className="text-xs text-gray-400 line-through">{comparePrice}</span>
+            )}
+          </div>
+          {/* Mobile add-to-cart — a real tap target since there is no hover */}
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            aria-label={t("addToCart")}
+            className="md:hidden flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-btn active:scale-90 disabled:opacity-40 transition-transform"
+          >
+            <ShoppingCart className="h-4 w-4" />
+          </button>
         </div>
         {product.stock > 0 && product.stock < 10 && (
           <p className="text-[10px] text-orange-500 font-medium mt-1">

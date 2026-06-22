@@ -1,6 +1,6 @@
 "use client";
 import { useSession, signOut } from "next-auth/react";
-import { ShoppingCart, Heart, User, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, Heart, User, Search, SlidersHorizontal, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -9,8 +9,12 @@ import { useCurrencyStore } from "@/store/currency";
 import { useWishlistStore } from "@/store/wishlist";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { SettingsSheet } from "./SettingsSheet";
 
-export function Header() {
+/** A resolved nav link from the CMS "header" menu (label already localized). */
+export type HeaderMenuLink = { label: string; href: string };
+
+export function Header({ menu }: { menu?: HeaderMenuLink[] }) {
   const t = useTranslations("nav");
   const { brandName, brandLogo } = useSiteSettings();
   const { data: session } = useSession();
@@ -18,15 +22,18 @@ export function Header() {
   const wishlistCount = useWishlistStore((s) => s.count());
   const { currency, setCurrency } = useCurrencyStore();
 
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [prevCount, setPrevCount] = useState(totalItems);
   const [cartBump, setCartBump] = useState(false);
-  // Prevent hydration mismatch: localStorage-persisted Zustand stores
-  // (cart, wishlist) are unavailable on the server, so badge counts are
-  // always 0 during SSR.  We defer badge rendering until after mount.
+  // Cart/wishlist counts come from localStorage-persisted stores that are 0
+  // during SSR, so badges are deferred until after mount to avoid hydration
+  // mismatch.
   const [mounted, setMounted] = useState(false);
+  // Fall back to the brand name if the CMS logo URL is broken/unreachable, so a
+  // bad URL never shows the browser's broken-image icon.
+  const [logoOk, setLogoOk] = useState(true);
 
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -42,8 +49,8 @@ export function Header() {
   useEffect(() => {
     if (totalItems > prevCount) {
       setCartBump(true);
-      const t = setTimeout(() => setCartBump(false), 500);
-      return () => clearTimeout(t);
+      const tm = setTimeout(() => setCartBump(false), 500);
+      return () => clearTimeout(tm);
     }
     setPrevCount(totalItems);
   }, [totalItems, prevCount]);
@@ -58,40 +65,46 @@ export function Header() {
       if (q) {
         router.push(`/products?search=${encodeURIComponent(q)}`);
         setSearchOpen(false);
-        setMobileOpen(false);
       }
     }
     if (e.key === "Escape") setSearchOpen(false);
   }
 
   const navLinks = [
-    { label: t("home"),                         href: "/" },
-    { label: t("products"),                     href: "/products" },
-    { label: t("categories.electronics"),       href: "/products?category=electronics" },
-    { label: t("categories.fashion"),           href: "/products?category=fashion" },
-    { label: t("categories.food"),              href: "/products?category=food" },
+    { label: t("home"),                   href: "/" },
+    { label: t("products"),               href: "/products" },
+    { label: t("categories.electronics"), href: "/products?category=electronics" },
+    { label: t("categories.fashion"),     href: "/products?category=fashion" },
+    { label: t("categories.food"),        href: "/products?category=food" },
   ];
+
+  // Use the CMS-managed "header" menu when published; otherwise fall back to the
+  // built-in localized links so the nav is never empty.
+  const desktopLinks: HeaderMenuLink[] = menu && menu.length > 0 ? menu : navLinks;
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 header-safe transition-all duration-300 ${
         scrolled ? "glass shadow-sm" : "bg-white/95 backdrop-blur-sm"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main bar */}
-        <div className="flex items-center justify-between h-16 gap-2">
+        <div className="flex items-center justify-between h-14 md:h-16 gap-2">
           {/* Logo — brand name/logo come from the dashboard CMS (falls back to "BOSBA") */}
-          <Link href="/" className="flex-shrink-0 group">
-            {brandLogo ? (
+          <Link href="/" className="flex-shrink-0 group" aria-label={brandName}>
+            {brandLogo && logoOk ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={brandLogo}
                 alt={brandName}
-                className="h-8 w-auto object-contain transition-opacity group-hover:opacity-85"
+                width={128}
+                height={32}
+                onError={() => setLogoOk(false)}
+                className="h-7 md:h-8 w-auto object-contain transition-opacity group-hover:opacity-85"
               />
             ) : (
-              <span className="text-2xl font-black tracking-tight gradient-text transition-opacity group-hover:opacity-85">
+              <span className="text-xl md:text-2xl font-black tracking-tight gradient-text transition-opacity group-hover:opacity-85">
                 {brandName}
               </span>
             )}
@@ -114,29 +127,37 @@ export function Header() {
           <div className="flex items-center gap-0.5">
             {/* Mobile search toggle */}
             <button
-              className="md:hidden p-2.5 rounded-full hover:bg-gray-100 transition-colors"
+              className="md:hidden tap-target flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setSearchOpen((v) => !v)}
               aria-label="Search"
             >
               <Search className="h-5 w-5 text-gray-600" />
             </button>
 
-            {/* Language / currency — hidden on smallest screens */}
-            <div className="hidden sm:block">
+            {/* Mobile: language + currency live in the settings bottom sheet */}
+            <button
+              className="md:hidden tap-target flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              onClick={() => setSettingsOpen(true)}
+              aria-label={t("settings")}
+            >
+              <SlidersHorizontal className="h-5 w-5 text-gray-600" />
+            </button>
+
+            {/* Desktop: language / currency inline */}
+            <div className="hidden md:block">
               <LanguageSwitcher />
             </div>
-
             <button
               onClick={() => setCurrency(currency === "USD" ? "KHR" : "USD")}
-              className="hidden sm:flex items-center text-xs font-semibold border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 hover:border-gray-300 transition-all"
+              className="hidden md:flex items-center text-xs font-semibold border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 hover:border-gray-300 transition-all"
             >
               {currency === "USD" ? "$ USD" : "៛ KHR"}
             </button>
 
-            {/* Wishlist */}
+            {/* Wishlist — desktop only (mobile reaches it via profile/tab bar) */}
             <Link
               href="/wishlist"
-              className="relative p-2.5 rounded-full hover:bg-gray-100 transition-colors group"
+              className="relative hidden md:flex p-2.5 rounded-full hover:bg-gray-100 transition-colors group"
               aria-label={t("wishlist")}
             >
               <Heart className="h-5 w-5 text-gray-600 group-hover:text-red-500 transition-colors" />
@@ -150,7 +171,7 @@ export function Header() {
             {/* Cart */}
             <Link
               href="/cart"
-              className="relative p-2.5 rounded-full hover:bg-gray-100 transition-colors group"
+              className="relative tap-target flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors group"
               aria-label={t("cart")}
             >
               <ShoppingCart
@@ -160,7 +181,7 @@ export function Header() {
               />
               {mounted && totalItems > 0 && (
                 <span
-                  className={`absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold px-1 leading-none ${
+                  className={`absolute top-1 right-1 bg-red-600 text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold px-1 leading-none ${
                     cartBump ? "animate-cart-bump" : ""
                   }`}
                 >
@@ -178,7 +199,7 @@ export function Header() {
                   </div>
                 </button>
 
-                {/* Dropdown */}
+                {/* Dropdown (desktop hover) */}
                 <div className="absolute right-0 top-full mt-2 w-54 bg-white rounded-2xl shadow-popup border border-gray-100/80 py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-1 group-hover:translate-y-0 transition-all duration-200 z-50 min-w-[220px]">
                   <div className="px-4 py-2.5 border-b border-gray-100 mb-1">
                     <p className="font-semibold text-sm text-gray-900 truncate">
@@ -219,45 +240,29 @@ export function Header() {
             ) : (
               <Link
                 href="/login"
-                className="text-sm font-semibold bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 active:scale-95 transition-all shadow-btn ml-1"
+                className="text-sm font-semibold bg-red-600 text-white px-3.5 md:px-4 py-2 rounded-full hover:bg-red-700 active:scale-95 transition-all shadow-btn ml-1"
               >
                 {t("login")}
               </Link>
             )}
-
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden p-2.5 rounded-full hover:bg-gray-100 transition-colors ml-0.5"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label="Toggle menu"
-            >
-              <span className="relative block w-5 h-5">
-                <X
-                  className={`absolute inset-0 h-5 w-5 text-gray-700 transition-all duration-200 ${
-                    mobileOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"
-                  }`}
-                />
-                <Menu
-                  className={`absolute inset-0 h-5 w-5 text-gray-700 transition-all duration-200 ${
-                    mobileOpen ? "opacity-0 -rotate-90" : "opacity-100 rotate-0"
-                  }`}
-                />
-              </span>
-            </button>
           </div>
         </div>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-0.5 pb-2">
-          {navLinks.map(({ label, href }) => (
-            <Link
-              key={href}
-              href={href}
-              className="text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-full hover:bg-red-50 transition-all"
-            >
-              {label}
-            </Link>
-          ))}
+          {desktopLinks.map(({ label, href }) => {
+            const cls =
+              "text-sm font-medium text-gray-600 hover:text-red-600 px-3 py-1.5 rounded-full hover:bg-red-50 transition-all";
+            return href.startsWith("/") ? (
+              <Link key={href} href={href} className={cls}>
+                {label}
+              </Link>
+            ) : (
+              <a key={href} href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+                {label}
+              </a>
+            );
+          })}
         </nav>
 
         {/* Mobile search */}
@@ -269,38 +274,23 @@ export function Header() {
                 ref={searchRef}
                 type="search"
                 placeholder={t("mobileSearch")}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-red-100 transition-all"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-red-100 transition-all"
                 onKeyDown={handleSearch}
               />
-            </div>
-          </div>
-        )}
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-gray-100 pt-3 space-y-0.5 animate-slide-down">
-            <div className="flex gap-2 flex-wrap mb-3 pb-3 border-b border-gray-100">
-              <LanguageSwitcher />
               <button
-                onClick={() => setCurrency(currency === "USD" ? "KHR" : "USD")}
-                className="text-xs font-semibold border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                onClick={() => setSearchOpen(false)}
+                aria-label="Close search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-gray-400 hover:bg-gray-200"
               >
-                {currency === "USD" ? "$ USD" : "៛ KHR"}
+                <X className="h-4 w-4" />
               </button>
             </div>
-            {navLinks.slice(0, 2).map(({ label, href }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center py-2.5 px-3 text-sm font-medium text-gray-700 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
-                {label}
-              </Link>
-            ))}
           </div>
         )}
       </div>
+
+      {/* Language + currency bottom sheet (mobile) */}
+      <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </header>
   );
 }

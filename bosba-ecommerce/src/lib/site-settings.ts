@@ -9,9 +9,19 @@ export type SiteSettings = {
   brandLogo: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
+  announcementEn: string | null;
+  announcementKm: string | null;
+  // PWA launch behaviour (CMS-controlled). Splash defaults ON, onboarding OFF.
+  splashEnabled: boolean;
+  splashTagline: string | null;
+  onboardingEnabled: boolean;
 };
 
-const KEYS = ["brand_name", "brand_logo", "primary_color", "secondary_color"];
+const KEYS = [
+  "brand_name", "brand_logo", "primary_color", "secondary_color",
+  "announcement_en", "announcement_km",
+  "pwa_splash_enabled", "splash_tagline", "onboarding_enabled",
+];
 
 // Only accept safe CSS color values (hex / rgb() / hsl()) so a settings value
 // can never inject arbitrary CSS into the injected <style>.
@@ -36,5 +46,11 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     brandLogo: map.brand_logo?.trim() || null,
     primaryColor: safeColor(map.primary_color),
     secondaryColor: safeColor(map.secondary_color),
+    announcementEn: map.announcement_en?.trim() || null,
+    announcementKm: map.announcement_km?.trim() || null,
+    // Splash defaults ON unless explicitly turned off; onboarding defaults OFF.
+    splashEnabled: map.pwa_splash_enabled !== "false",
+    splashTagline: map.splash_tagline?.trim() || null,
+    onboardingEnabled: map.onboarding_enabled === "true",
   };
 });

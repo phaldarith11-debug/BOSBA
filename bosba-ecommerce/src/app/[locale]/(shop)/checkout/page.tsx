@@ -7,6 +7,7 @@ import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { formatPrice, usdToKhr } from "@/lib/currency";
 import { Truck, CheckCircle, MapPin } from "lucide-react";
+import { OrderSuccessOverlay } from "@/components/OrderSuccessOverlay";
 import toast from "react-hot-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -52,11 +53,9 @@ const CAMBODIA_PROVINCES = [
 ];
 
 const PAYMENT_METHODS = [
-  { value: "ABA_BANK",    label: "ABA Bank (PayWay QR)", icon: "🏦" },
-  { value: "ACLEDA_BANK", label: "ACLEDA Bank",          icon: "🏦" },
-  { value: "WING_MONEY",  label: "Wing Money",           icon: "💸" },
-  { value: "COD",         label: "Cash on Delivery",     icon: "📦" },
-  { value: "PI_PAY",      label: "Pi Pay",               icon: "📱" },
+  { value: "ABA_BANK",    label: "ABA Bank Transfer / KHQR", icon: "🏦" },
+  { value: "WING_MONEY",  label: "Wing Money",               icon: "💸" },
+  { value: "COD",         label: "Cash on Delivery",         icon: "📦" },
 ];
 
 // ─── Province / zone matching ─────────────────────────────────────────────────
@@ -129,6 +128,7 @@ export default function CheckoutPage() {
 
   const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
 
@@ -151,6 +151,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login?callbackUrl=/checkout");
     fetch("/api/delivery-zones").then((r) => r.json()).then(setZones).catch(() => {});
+    // Pick up a promo code applied on the cart page so the discount carries over.
+    try {
+      const saved = sessionStorage.getItem("bosba_coupon");
+      if (saved) setCouponCode(saved);
+    } catch {
+      /* ignore */
+    }
   }, [status, router]);
 
   useEffect(() => {
@@ -158,6 +165,19 @@ export default function CheckoutPage() {
   }, [session]);
 
   const sub = subtotalUsd();
+
+  // Auto-validate a code carried over from the cart once the subtotal is known.
+  useEffect(() => {
+    if (couponCode && discount === 0 && sub > 0) {
+      fetch(`/api/coupons/validate?code=${encodeURIComponent(couponCode)}&subtotal=${sub}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data.error) setDiscount(data.discountUsd);
+        })
+        .catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [couponCode, sub]);
   const zone = useMemo(() => zoneForProvince(form.province, zones), [form.province, zones]);
   const deliveryFeeUsd = useMemo(() => effectiveFee(zone, sub - discount), [zone, sub, discount]);
   const isFreeDelivery = zone !== null && deliveryFeeUsd === 0;
@@ -227,16 +247,23 @@ export default function CheckoutPage() {
     if (res.ok) {
       const order = await res.json();
       clearCart();
-      toast.success(t("success"));
-      router.push(`/payment/${order.id}`);
+      try {
+        sessionStorage.removeItem("bosba_coupon");
+      } catch {
+        /* ignore */
+      }
+      // Celebrate, then move to payment once the animation has played.
+      setSuccess(true);
+      setTimeout(() => router.push(`/payment/${order.id}`), 1600);
     } else {
-      const data = await res.json();
-      toast.error(data.error ?? t("error"));
+      const data = await res.json().catch(() => null);
+      toast.error(data?.error ?? t("error"));
     }
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {success && <OrderSuccessOverlay />}
       <h1 className="text-2xl font-bold text-gray-900 mb-8">{t("title")}</h1>
 
       <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">

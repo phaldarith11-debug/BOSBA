@@ -8,6 +8,8 @@ import { getProducts } from "../../src/lib/api";
 import { useCartStore } from "../../src/store/cart";
 import { normalizeProduct } from "../../src/lib/utils";
 import type { Product } from "../../src/types";
+import { CmsSections } from "../../src/components/cms/CmsSections";
+import { MenuChips } from "../../src/components/cms/MenuChips";
 import { ShoppingCart, ArrowRight } from "lucide-react-native";
 
 const BRAND = "#e51b1b";
@@ -112,6 +114,11 @@ export default function HomeScreen() {
       contentContainerStyle={{ paddingBottom: 32 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={BRAND} />}
     >
+      {/* No-code CMS blocks published in the Developer Homepage Builder.
+          Renders nothing until a mobile-targeted block is published, so the
+          hardcoded hero/sections below are unchanged by default. */}
+      <CmsSections page="home" />
+
       {/* Hero */}
       <View style={styles.hero}>
         <View>
@@ -130,6 +137,10 @@ export default function HomeScreen() {
         </View>
         <Text style={{ fontSize: 72 }}>🛍️</Text>
       </View>
+
+      {/* CMS-managed quick links (Developer → Menu Builder → Mobile Quick Links).
+          Renders nothing until links are published. */}
+      <MenuChips />
 
       {/* Trust strip */}
       <View style={styles.trustStrip}>

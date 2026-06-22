@@ -30,9 +30,9 @@ const CAMBODIA_PROVINCES = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: "ABA_BANK",   label: "ABA Bank QR",        icon: "🏦" },
-  { id: "WING_MONEY", label: "Wing Money",          icon: "💸" },
-  { id: "COD",        label: "Cash on Delivery",    icon: "📦" },
+  { id: "ABA_BANK",   label: "ABA Bank Transfer / KHQR", icon: "🏦" },
+  { id: "WING_MONEY", label: "Wing Money",               icon: "💸" },
+  { id: "COD",        label: "Cash on Delivery",         icon: "📦" },
 ] as const;
 
 // ─── Province → best zone ─────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import type { OrderStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -17,11 +18,16 @@ function generateOrderNumber(): string {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
   const { items, addressData, deliveryZoneId, paymentMethod, couponCode, notes, exchangeRate = 4100 } = body;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return NextResponse.json({ error: "Your cart is empty" }, { status: 400 });
+  }
 
   const zone = await prisma.deliveryZone.findUnique({ where: { id: deliveryZoneId } });
   if (!zone) return NextResponse.json({ error: "Invalid delivery zone" }, { status: 400 });
@@ -29,7 +35,7 @@ export async function POST(req: NextRequest) {
   let coupon = null;
   let discountUsd = 0;
   if (couponCode) {
-    coupon = await prisma.coupon.findUnique({ where: { code: couponCode, active: true } });
+    coupon = await prisma.coupon.findFirst({ where: { code: couponCode, active: true } });
     if (coupon) {
       if (coupon.discountType === "PERCENTAGE") {
         discountUsd = (body.subtotalUsd * Number(coupon.discountValue)) / 100;
@@ -38,6 +44,11 @@ export async function POST(req: NextRequest) {
       }
     }
   }
+
+  // COD needs no upfront payment → straight to fulfilment. Every other method
+  // (manual ABA/KHQR, Wing, etc.) waits for the customer to pay + submit proof.
+  const initialStatus: OrderStatus =
+    paymentMethod === "COD" ? "PROCESSING" : "PENDING_PAYMENT";
 
   const subtotalUsd = body.subtotalUsd;
   const deliveryFeeUsd =
@@ -64,6 +75,7 @@ export async function POST(req: NextRequest) {
       deliveryZoneId,
       couponId: coupon?.id,
       paymentMethod,
+      status: initialStatus,
       subtotalUsd,
       subtotalKhr: usdToKhr(subtotalUsd, exchangeRate),
       deliveryFeeUsd,
@@ -78,7 +90,7 @@ export async function POST(req: NextRequest) {
         create: items.map((item: { productId: string; nameEn: string; nameKm?: string; priceUsd: number; priceKhr: number; quantity: number; imageUrl?: string }) => ({
           productId: item.productId,
           nameEn: item.nameEn,
-          nameKm: item.nameKm,
+          nameKm: item.nameKm ?? item.nameEn,
           priceUsd: item.priceUsd,
           priceKhr: item.priceKhr,
           quantity: item.quantity,
@@ -135,6 +147,11 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(order, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/orders failed:", err);
+    const message = err instanceof Error ? err.message : "Failed to create order";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function GET() {

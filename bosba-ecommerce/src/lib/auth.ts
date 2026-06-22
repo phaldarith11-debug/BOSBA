@@ -80,12 +80,15 @@ export const authOptions: NextAuthOptions = {
         if (!valid) return null;
         // Block sign-in until email is verified
         if (!user.emailVerified) return null;
+        // Block deactivated accounts (admin can flip `active` off)
+        if (!user.active) throw new Error("ACCOUNT_DEACTIVATED");
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           image: user.image,
           role: user.role,
+          active: user.active,
           emailVerified: user.emailVerified,
         } as never;
       },
@@ -115,9 +118,10 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account }) {
       if (user) {
-        const u = user as { id: string; role?: string; emailVerified?: Date | null };
+        const u = user as { id: string; role?: string; active?: boolean; emailVerified?: Date | null };
         token.id = u.id;
         token.role = u.role;
+        token.active = u.active ?? true;
         token.emailVerified = u.emailVerified ?? null;
       }
       if (account) {
@@ -129,6 +133,8 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).active = token.active ?? true;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session.user as any).emailVerified = token.emailVerified ?? null;
       }

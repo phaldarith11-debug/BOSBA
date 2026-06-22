@@ -13,6 +13,9 @@ async function saveSettings(formData: FormData) {
   }
   revalidatePath("/admin/settings");
   revalidatePath("/api/app-settings");
+  // Refresh brand/PWA-derived metadata (theme-color, manifest link, icons)
+  // across the public site after a settings change.
+  revalidatePath("/", "layout");
 }
 
 type SettingField = {
@@ -39,6 +42,17 @@ const SECTIONS: SettingSection[] = [
     ],
   },
   {
+    title: "PWA / Installable App",
+    fields: [
+      { key: "pwa_app_name",         label: "App Name",         description: "Full name shown under the home-screen icon when installed.", placeholder: "BOSBA" },
+      { key: "pwa_short_name",       label: "Short Name",       description: "Compact name for small spaces (keep it short).", placeholder: "BOSBA" },
+      { key: "pwa_theme_color",      label: "Theme Color",      description: "Browser/OS chrome color for the installed app.", placeholder: "#e51b1b", type: "color" },
+      { key: "pwa_background_color", label: "Splash Background", description: "Splash screen background while the app loads.", placeholder: "#ffffff", type: "color" },
+      { key: "pwa_icon_192",         label: "App Icon 192px URL", description: "Optional override (PNG, 192x192). Leave blank to use the bundled BOSBA icon.", placeholder: "https://res.cloudinary.com/..." },
+      { key: "pwa_icon_512",         label: "App Icon 512px URL", description: "Optional override (PNG, 512x512). Leave blank to use the bundled BOSBA icon.", placeholder: "https://res.cloudinary.com/..." },
+    ],
+  },
+  {
     title: "Homepage Content",
     fields: [
       { key: "homepage_hero_title_en",    label: "Hero Title (English)",    description: "Main headline shown on the homepage hero.", placeholder: "Shop Smart, Save More" },
@@ -58,6 +72,15 @@ const SECTIONS: SettingSection[] = [
       { key: "usd_khr_rate",          label: "USD/KHR Exchange Rate",  description: "Rate used for KHR price display.", type: "number", placeholder: "4100" },
       { key: "free_delivery_over_usd",label: "Free Delivery Threshold (USD)", description: "Orders above this amount get free delivery.", type: "number", placeholder: "50" },
       { key: "maintenance_mode",      label: "Maintenance Mode",       description: "Set to 1 to show maintenance page to customers.", type: "number", placeholder: "0" },
+    ],
+  },
+  {
+    title: "Manual ABA / KHQR Payment",
+    fields: [
+      { key: "aba_account_name",         label: "ABA Account Name",        description: "Name on your ABA account, shown to customers at checkout.", placeholder: "BOSBA SHOP CO LTD" },
+      { key: "aba_account_number",       label: "ABA Account Number",      description: "Account number customers transfer to.", placeholder: "000 123 456" },
+      { key: "aba_khqr_image",           label: "KHQR Image URL",          description: "Full URL of your KHQR code image (upload to Cloudinary, then paste the link). Shown for customers to scan.", placeholder: "https://res.cloudinary.com/..." },
+      { key: "aba_payment_instructions", label: "Payment Instructions",    description: "Extra guidance shown under the account details (optional).", placeholder: "Transfer the exact amount and include your order number as the reference." },
     ],
   },
   {

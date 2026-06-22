@@ -29,13 +29,15 @@ interface SearchParams {
 }
 
 const ORDER_STATUSES = [
-  { key: "",            label: "All" },
-  { key: "PENDING",     label: "Pending" },
-  { key: "CONFIRMED",   label: "Confirmed" },
-  { key: "PROCESSING",  label: "Processing" },
-  { key: "SHIPPED",     label: "Shipped" },
-  { key: "DELIVERED",   label: "Delivered" },
-  { key: "CANCELLED",   label: "Cancelled" },
+  { key: "",                  label: "All" },
+  { key: "PENDING_PAYMENT",   label: "Awaiting Payment" },
+  { key: "PAYMENT_SUBMITTED", label: "Review Payment" },
+  { key: "PAID",              label: "Paid" },
+  { key: "PROCESSING",        label: "Processing" },
+  { key: "DELIVERING",        label: "Delivering" },
+  { key: "COMPLETED",         label: "Completed" },
+  { key: "PAYMENT_REJECTED",  label: "Rejected" },
+  { key: "CANCELLED",         label: "Cancelled" },
 ];
 
 export default async function AdminOrdersPage({

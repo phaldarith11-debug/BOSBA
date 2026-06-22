@@ -86,20 +86,45 @@ const ZONES = [
 async function main() {
   console.log("Seeding database...");
 
-  // Admin user
-  const adminPassword = await bcrypt.hash("admin123", 12);
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@bosba.com" },
-    update: {},
-    create: {
-      email: "admin@bosba.com",
-      name: "BOSBA Admin",
-      password: adminPassword,
-      role: "ADMIN",
-      emailVerified: new Date(),
-    },
-  });
-  console.log("Admin:", admin.email);
+  // ── Dashboard test accounts ────────────────────────────────────────────────
+  // SECURITY: these are LOCAL DEVELOPMENT defaults only. Change them before any
+  // public/production deploy via Admin → Users & Roles (reset password / create
+  // your own accounts), or override the password with the SEED_PASSWORD env var.
+  //   Default password: Bosba!Dev2026   (overridable via SEED_PASSWORD)
+  const DEFAULT_PASSWORD = process.env.SEED_PASSWORD || "Bosba!Dev2026";
+  const hashed = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+
+  const accounts: { email: string; name: string; role: "ADMIN" | "SELLER" | "DEVELOPER" }[] = [
+    { email: "admin@bosba.com", name: "BOSBA Admin", role: "ADMIN" },
+    { email: "seller@bosba.com", name: "Demo Seller", role: "SELLER" },
+    { email: "developer@bosba.com", name: "Platform Developer", role: "DEVELOPER" },
+  ];
+
+  for (const acc of accounts) {
+    const user = await prisma.user.upsert({
+      where: { email: acc.email },
+      // Self-healing: re-running the seed restores role + verified + active so a
+      // stale/locked account always becomes usable again.
+      update: { role: acc.role, emailVerified: new Date(), active: true },
+      create: {
+        email: acc.email,
+        name: acc.name,
+        password: hashed,
+        role: acc.role,
+        emailVerified: new Date(),
+        active: true,
+      },
+    });
+    if (acc.role === "SELLER") {
+      await prisma.sellerProfile.upsert({
+        where: { userId: user.id },
+        update: {},
+        create: { userId: user.id, storeName: "Demo Store", approved: true },
+      });
+    }
+    console.log(`   ${acc.role}: ${user.email}`);
+  }
+  const admin = accounts[0];
 
   // Categories
   const categories = await Promise.all([
@@ -197,7 +222,11 @@ async function main() {
   console.log("Settings defaults set");
 
   console.log("\n✅ Seed complete!");
-  console.log("   Admin login: admin@bosba.com / admin123");
+  console.log("   Dashboard logins (password: " + DEFAULT_PASSWORD + ")");
+  console.log("     Admin     → admin@bosba.com      → /admin");
+  console.log("     Seller    → seller@bosba.com     → /seller");
+  console.log("     Developer → developer@bosba.com  → /developer");
+  console.log("   ⚠ Change these passwords before any public deploy (Admin → Users & Roles).");
   console.log("   Delivery zones with provinces: ✓");
 }
 

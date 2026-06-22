@@ -26,7 +26,9 @@ function TelegramIcon() {
   );
 }
 
-export function Footer() {
+export type FooterQuickLink = { label: string; href: string };
+
+export function Footer({ quickLinks }: { quickLinks?: FooterQuickLink[] }) {
   const t = useTranslations("footer");
 
   const socialLinks = [
@@ -35,12 +37,15 @@ export function Footer() {
     { icon: TelegramIcon, href: "#", label: "Telegram" },
   ];
 
-  const shopLinks = [
+  const defaultShopLinks = [
     { label: t("allProducts"), href: "/products" },
     { label: "Electronics",   href: "/products?category=electronics" },
     { label: "Fashion",       href: "/products?category=fashion" },
     { label: t("featured"),   href: "/products?featured=true" },
   ];
+  // CMS-managed "footer" menu when published; otherwise the built-in shop links.
+  const shopLinks: FooterQuickLink[] =
+    quickLinks && quickLinks.length > 0 ? quickLinks : defaultShopLinks;
 
   const accountLinks = [
     { label: "Login",        href: "/login" },
@@ -77,16 +82,23 @@ export function Footer() {
               {t("shop")}
             </h4>
             <ul className="space-y-2.5 text-sm">
-              {shopLinks.map(({ label, href }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="inline-block hover:text-white hover:translate-x-1 transition-all duration-150"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
+              {shopLinks.map(({ label, href }) => {
+                const cls =
+                  "inline-block hover:text-white hover:translate-x-1 transition-all duration-150";
+                return (
+                  <li key={href}>
+                    {href.startsWith("/") ? (
+                      <Link href={href} className={cls}>
+                        {label}
+                      </Link>
+                    ) : (
+                      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+                        {label}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

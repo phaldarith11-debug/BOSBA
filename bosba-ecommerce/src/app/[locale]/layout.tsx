@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Battambang, Noto_Sans_JP, Noto_Sans_SC } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -7,6 +7,15 @@ import { routing } from "@/i18n/routing";
 import { Providers } from "../providers";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { getSiteSettings } from "@/lib/site-settings";
+import { getSettingsMap } from "@/lib/dev-settings";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { MaintenanceScreen } from "@/components/MaintenanceScreen";
+import { getPwaSettings } from "@/lib/pwa-settings";
+import { PWARegister } from "@/components/PWARegister";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { AppSplash } from "@/components/AppSplash";
+import { Onboarding } from "@/components/Onboarding";
 import "../globals.css";
 
 const inter = Inter({
@@ -61,6 +70,18 @@ const LOCALE_META: Record<Locale, { lang: string; title: string; description: st
   },
 };
 
+// Theme color follows the dashboard-configured PWA color so the browser/OS
+// chrome matches the installed app. Lives in viewport per Next 14 conventions.
+export async function generateViewport(): Promise<Viewport> {
+  const pwa = await getPwaSettings();
+  return {
+    themeColor: pwa.themeColor,
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  };
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -69,11 +90,31 @@ export async function generateMetadata({
   const locale = params.locale as Locale;
   const meta = LOCALE_META[locale] ?? LOCALE_META.en;
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "https://bosba.com";
+  // Canonical/OG base URL. Prefer explicit env, then Vercel's injected host, so
+  // SEO tags point at the live domain even if NEXTAUTH_URL hasn't been set yet.
+  const baseUrl =
+    process.env.NEXTAUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://bosbadrinksnack.vercel.app");
+  const pwa = await getPwaSettings();
 
   return {
     title: { default: meta.title, template: `%s | BOSBA` },
     description: meta.description,
+    applicationName: pwa.appName,
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: pwa.shortName,
+    },
+    icons: {
+      icon: [
+        { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
     alternates: {
       canonical: baseUrl,
       languages: {
@@ -122,6 +163,28 @@ export default async function LocaleLayout({
     site.secondaryColor ? `--brand-secondary:${site.secondaryColor};` : "",
   ].join("");
 
+  // Maintenance mode: shoppers see a holding screen; staff keep full access so
+  // they can still browse/test the live site while it's "off" to the public.
+  const settingsMap = await getSettingsMap();
+  if (settingsMap.maintenance_mode === "true") {
+    const session = await getServerSession(authOptions);
+    const role = (session?.user as { role?: string } | undefined)?.role;
+    const STAFF = ["OWNER", "ADMIN", "MANAGER", "EDITOR", "STAFF", "VIEWER", "SELLER", "DEVELOPER"];
+    const isStaff = !!role && STAFF.includes(role);
+    if (!isStaff) {
+      const msg = locale === "km"
+        ? settingsMap.maintenance_message_km || settingsMap.maintenance_message_en
+        : settingsMap.maintenance_message_en;
+      return (
+        <html lang={meta.lang} className={`${inter.variable} ${battambang.variable}`}>
+          <body className={FONT_CLASS[locale as Locale] ?? inter.className}>
+            <MaintenanceScreen brandName={site.brandName} message={msg} />
+          </body>
+        </html>
+      );
+    }
+  }
+
   return (
     <html
       lang={meta.lang}
@@ -133,8 +196,12 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <SiteSettingsProvider value={site}>
             <Providers>{children}</Providers>
+            <AppSplash />
+            <Onboarding />
+            <InstallPrompt />
           </SiteSettingsProvider>
         </NextIntlClientProvider>
+        <PWARegister />
       </body>
     </html>
   );
